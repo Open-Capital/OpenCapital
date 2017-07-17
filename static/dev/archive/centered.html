@@ -3,19 +3,19 @@
 <html>
 
 <head>
-	
+
 	<!--
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"></script>
 	-->
-	<script type="text/javascript" src="/js/jquery.js"></script>
-	<script type="text/javascript" src="/js/jquery-ui-1.8.1.custom.min.js"></script>
-	
-	<script type="text/javascript" src="/js/jquery.scrollTo-1.4.2-min.js"></script>
-	<script type="text/javascript" src="/js/jquery.easing.1.3.js"></script>
-	
-	<script type="text/javascript" src="/js/shadowcast.js"></script>
-	
+	<script type="text/javascript" src="/js/lib/jquery.js"></script>
+	<script type="text/javascript" src="/js/lib/jquery-ui-1.8.1.custom.min.js"></script>
+
+	<script type="text/javascript" src="/js/lib/jquery.scrollTo-1.4.2-min.js"></script>
+	<script type="text/javascript" src="/js/lib/jquery.easing.1.3.js"></script>
+
+	<script type="text/javascript" src="/js/lib/shadowcast.js"></script>
+
 	<title>Digital Torah</title>
 
 
@@ -25,19 +25,19 @@
 
 		firstVisible = new Object();
 		lastVisible = new Object();
-		
+
 		firstVisible.book = "Bereishit";
 		firstVisible.chapter = 1;
 		firstVisible.verse = 1;
 		lastVisible.book = "Bereishit";
 		lastVisible.chapter = 1;
 		lastVisible.verse = 1;
-		
-		
+
+
 		$(window).resize(function(){
 			shadowCast($(".caster"));
 		})
-		
+
 // Load Texts
 
 		$("#baseBuffer").load("genesis", function() {
@@ -46,18 +46,18 @@
 			$("#commentaryBuffer").load("rashi", function(){
 					updateCommentary();
 				});
-			
+
 		});
 
-	
-			
-// Commentary Modal		
+
+
+// Commentary Modal
 		$(".commentary").live("click", function(e){
 			var $c = $(e.currentTarget);
 			$c.clone().hide().appendTo("body")
 				.removeClass("commentary").addClass("open")
 				.draggable();
-			
+
 			var $o	= $(".open");
 			var h = $o.height();
 			var w = $o.width();
@@ -72,15 +72,15 @@
 				$o.children().eq(0).height(h - p)
 				$o.append('<div class="openScrollCtl"><img src="/img/up.png" class="up"/><img src="/img/down.png" class="down"/></div>');
 			} else {
-				
+
 			}
-			
+
 			$o.css("top", (wh - (h+(2*p))) / 2 + "px");
 			$o.css("left", (ww - (w+(2*pl))) / 2 + "px");
-					
+
 			$o.fadeIn("fast");
 		});
-		
+
 // Commentary Model Hide
 
 		$(".open").live("click", function(e){
@@ -88,39 +88,39 @@
 				$(".open").remove();
 			})
 		})
-		
+
 // Update Commentary
-		
+
 		function hideCommentary() {
 			$(".commentaryBox").fadeOut(100, function() {
 				$(".commentaryBox .commentary").appendTo("#commentaryBuffer");
 			});
-			
+
 		}
-		
+
 		function updateCommentary() {
-			
+
 			var c = 1;
-			
+
 			for ( var i = firstVisible.verse; i <= lastVisible.verse; i++ ) {
 				$(".commentary[data-ref=1:" + i + "]").each(function(i) {
 					$(this).appendTo("#c" + c);
 					c++;
 				});
 			}
-			
+
 			$(".commentaryBox").fadeIn(1200);
 			shadowCast($(".caster"));
-			
+
 			//$(".commentaryBox").fadeIn(1200);
 		}
-	
-//  Update Visible Verses		
+
+//  Update Visible Verses
 		function updateVisible() {
-			var $v = $(".verse"); 
+			var $v = $(".verse");
 			var $b = $("#basetext");
 			var l = $v.length;
-			
+
 			for (var i = 0; i < l; i++) {
 				console.log("examining " + i)
 				var top = parseInt($v.eq(i).offset().top);
@@ -131,23 +131,23 @@
 					break;
 				}
 			}
-			
+
 			for (i = i; i < l; i++) {
 				console.log("examining " + i)
 				var bottom = $v.eq(i).offset().top + $v.eq(i).outerHeight();
-				var bbottom = $b.outerHeight() + $b.offset().top; 
+				var bbottom = $b.outerHeight() + $b.offset().top;
 				console.log("bottom: " + bottom + " viz " + bbottom )
 				if (bottom > bbottom) {
-					lastVisible.verse = i - 1;					
+					lastVisible.verse = i - 1;
 					break;
 				}
 			}
-			
+
 			$("#header").html(firstVisible.book + " " + firstVisible.chapter + ":" + (firstVisible.verse+1) + "-" + (lastVisible.verse+1))
 			}
-		
-		
-// Base Text Scrolling		
+
+
+// Base Text Scrolling
 
 		function btScroll(d) {
 			$b = $("#basetext");
@@ -195,7 +195,7 @@
 			height: 100%;
 			overflow: hidden;
 		}
-		
+
 		#header {
 			position: absolute;
 			font-size: 22px;
@@ -204,7 +204,7 @@
 			padding-left: 7px;
 			left: 3%;
 		}
-		
+
 		#basetext {
 			position: absolute;
 			width: 60%;
@@ -219,7 +219,7 @@
 			z-index: 2;
 			background: white;
 		}
-		
+
 		.commentaryBox {
 			position: absolute;
 			height: 40%;
@@ -233,36 +233,36 @@
 			line-height: 1.2;
 			background: white;
 			z-index: 1;
-			
+
 		}
-		
+
 		#c1, #c2, #c3 {
 			top: 8%;
 		}
-		
+
 		#c1, #c4 {
 			left: 3%;
 		}
-		
+
 		#c4, #c5, #c6 {
 			top: 48%;
 		}
-		
+
 		#c2, #c5 {
 			left: 34%;
 		}
-		
+
 		#c3, #c6 {
 			left: 65%;
 		}
-		
+
 		#commentaryBuffer {
 			position: absolute;
 			left: 3600px;
 			top: 3600px;
 			visibility: hidden;
 		}
-		
+
 
 		.commentary {
  			background: white;
@@ -270,21 +270,21 @@
 			overflow: hidden;
 			cursor: pointer;
 		}
-		
+
 		.commentary:hover {
 			background: #f1f1f1;
 		}
-		
-		
+
+
 		.commentator {
 			font-weight: bold;
 		}
-		
+
 		.anchorText {
 			font-weight: bold;
 			font-style: italic;
 		}
-		
+
 		.open {
 		   	position: absolute;
 			width: 500px;
@@ -298,15 +298,15 @@
 			line-height: 1.2;
 			-webkit-box-shadow: 2px 2px 12px #333333;
 			-moz-box-shadow: 2px 2px 12px #333333;
-			
+
 		}
-		
+
 		.scrollCtl {
 			width: 100%;
 			background: white;
 			z-index: 5;
 		}
-		
+
 		.scrollCtl img {
 			height: 22.5px;
 			width: 27px;
@@ -314,37 +314,37 @@
 			bottom: 10px;
 			cursor: pointer;
 		}
-		
-		.scrollCtl .up { 
+
+		.scrollCtl .up {
 			left: 24%;
 		}
-		.scrollCtl .down { 
+		.scrollCtl .down {
 			right: 24%;
 		}
-		
+
 		.openScrollCtl {
 			position: absolute;
 			left: 255px;
 			bottom: 3px;
 		}
-		
+
 		.openScrollCtl img {
 			height: 18px;
 			width: 21px;
 			margin: 0px 5px;
 			cursor: pointer;
-			
+
 		}
-		
+
 		.openBottom {
 			overflow: hidden;
 		}
-		
+
 		.preShadow {
 			width: 1px;
 			clear: both;
 		}
-		
+
 		.shadow {
 			clear: both;
 		}

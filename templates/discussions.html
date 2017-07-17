@@ -65,7 +65,7 @@
 
 {% endblock %}
 
-{% block js %} 
+{% block js %}
     <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.js"></script>-->
     <script>{% include "js/django-csrf.js" %}</script>
     <script>
@@ -98,15 +98,15 @@
             sjs.textBrowser.show({
                 callback: sjs.makeLayer,
                 position: "static",
-                target: "#chooseText" 
-            });              
+                target: "#chooseText"
+            });
         })
-      
+
         sjs.textBrowser.show({
                 callback: sjs.makeLayer,
                 position: "static",
-                target: "#chooseText" 
-        });              
+                target: "#chooseText"
+        });
 
     })
 

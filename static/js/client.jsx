@@ -1,7 +1,7 @@
 var $            = require('jquery'),
     React        = require('react'),
     ReactDOM     = require('react-dom'),
-    DjangoCSRF   = require('./django-csrf'),
+    DjangoCSRF   = require('./lib/django-csrf'),
     SefariaReact = require('./s2');
 
 
