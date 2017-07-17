@@ -309,7 +309,35 @@ class AtomicTest(object):
         WebDriverWait(self.driver, TEMPER).until(element_to_be_clickable((By.CSS_SELECTOR, ".readerSheetsNav")))
         self.set_modal_cookie()
         return self
-    
+
+    def load_gardens(self):
+        self.driver.get(self.base_url + "/garden/jerusalem")
+        WebDriverWait(self.driver, TEMPER).until(element_to_be_clickable((By.CSS_SELECTOR, "#filter-1 g.row")))  # individual filter row
+        WebDriverWait(self.driver, TEMPER).until(element_to_be_clickable((By.CSS_SELECTOR, ".dc-grid-item .result-text .en"))) # individual result text
+        return self
+
+    def load_home(self):
+        self.driver.get(self.base_url + "/?home")
+        WebDriverWait(self.driver, TEMPER).until(element_to_be_clickable((By.CSS_SELECTOR, ".header")))
+        return self
+
+    def load_people(self):
+        self.driver.get(self.base_url + "/people")
+        WebDriverWait(self.driver, TEMPER).until(element_to_be_clickable((By.CSS_SELECTOR, ".author")))
+
+        self.driver.get(self.base_url + "/person/Meir%20Abulafia")
+        WebDriverWait(self.driver, TEMPER).until(element_to_be_clickable((By.CSS_SELECTOR, "#place-map")))
+        return self
+
+    def load_notifications(self):
+        self.driver.get(self.base_url + "/notifications")
+        WebDriverWait(self.driver, TEMPER).until(element_to_be_clickable((By.CSS_SELECTOR, ".notificationsList > .notification")))
+        return self
+
+    def load_private_sheets(self):
+        self.driver.get(self.base_url + "/sheets/private")
+        WebDriverWait(self.driver, TEMPER).until(element_to_be_clickable((By.CSS_SELECTOR, ".sheetsNewButton")))
+        return self
 """
 
                     Test Running Infrastructure

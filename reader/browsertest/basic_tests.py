@@ -33,6 +33,13 @@ class PagesLoad(AtomicTest):
         self.load_toc().click_toc_category("Midrash").click_toc_text("Midrash Tehillim")
         self.load_ref("Psalms.104")
         self.load_sheets()
+        self.load_gardens()
+        self.load_home()
+        self.load_people()
+        #logged in stuff
+        self.login_user()
+        self.load_notifications()
+
 
 
 class RecentInToc(AtomicTest):
