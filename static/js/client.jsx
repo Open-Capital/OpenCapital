@@ -1,3 +1,10 @@
+var $            = require('jquery'),
+    React        = require('react'),
+    ReactDOM     = require('react-dom'),
+    DjangoCSRF   = require('./lib/django-csrf'),
+    SefariaReact = require('./s2');
+
+
 $(function() {
   var container = document.getElementById('s2');
   var component;
