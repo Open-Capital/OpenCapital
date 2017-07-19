@@ -1,5 +1,6 @@
 const {
   CategoryColorLine,
+  CategoryAttribution,
   ReaderNavigationMenuMenuButton,
   ReaderNavigationMenuDisplaySettingsButton,
   TwoOrThreeBox,

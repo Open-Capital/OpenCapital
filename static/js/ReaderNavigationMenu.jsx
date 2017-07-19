@@ -14,6 +14,7 @@ const PropTypes  = require('prop-types');
 const classNames = require('classnames');
 const Sefaria    = require('./sefaria');
 const $          = require('./sefariaJquery');
+const ReaderNavigationCategoryMenu = require('./ReaderNavigationCategoryMenu');
 const Footer     = require('./Footer');
 import Component from 'react-class';
 
