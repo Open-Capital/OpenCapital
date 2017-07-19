@@ -5,6 +5,7 @@ const {
   LanguageToggleButton,
   LoadingMessage,
   AddToSourceSheetBox,
+  Note,
 }                = require('./Misc');
 const React      = require('react');
 const PropTypes  = require('prop-types');
@@ -12,6 +13,7 @@ const ReactDOM   = require('react-dom');
 const classNames = require('classnames');
 const Sefaria    = require('./sefaria');
 const $          = require('./sefariaJquery');
+const TextRange  = require('./TextRange');
 const Footer     = require('./Footer');
 import Component from 'react-class';
 

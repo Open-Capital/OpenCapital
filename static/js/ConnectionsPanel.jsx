@@ -4,6 +4,7 @@ const {
   LoginPrompt,
   LanguageToggleButton,
   ReaderNavigationMenuCloseButton,
+  AddToSourceSheetBox,
   Note,
 }                = require('./Misc');
 const React      = require('react');
