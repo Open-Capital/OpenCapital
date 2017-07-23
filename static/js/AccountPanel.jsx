@@ -3,7 +3,7 @@ const {
   TwoOrThreeBox,
   BlockLink,
   ReaderNavigationMenuSection
-} = require('./Misc');
+}                = require('./Misc');
 const React      = require('react');
 const PropTypes  = require('prop-types');
 const classNames = require('classnames');
@@ -86,9 +86,9 @@ class AccountPanel extends Component {
       );
   }
 }
-
 AccountPanel.propTypes = {
   interfaceLang: PropTypes.string,
 };
+
 
 module.exports = AccountPanel;

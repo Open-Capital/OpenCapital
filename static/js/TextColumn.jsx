@@ -294,7 +294,6 @@ class TextColumn extends Component {
     return (<div className={classes} onMouseUp={this.handleTextSelection}>{content}</div>);
   }
 }
-
 TextColumn.propTypes = {
   srefs:                 PropTypes.array.isRequired,
   version:               PropTypes.string,
@@ -320,5 +319,6 @@ TextColumn.propTypes = {
   panelsOpen:            PropTypes.number,
   layoutWidth:           PropTypes.number
 };
+
 
 module.exports = TextColumn;

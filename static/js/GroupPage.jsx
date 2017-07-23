@@ -12,6 +12,7 @@ const Sefaria    = require('./sefaria');
 const Footer     = require('./Footer');
 import Component from 'react-class';
 
+
 class GroupPage extends Component {
   constructor(props) {
     super(props);
@@ -213,7 +214,6 @@ class GroupPage extends Component {
             </div>);
   }
 }
-
 GroupPage.propTypes = {
   group: PropTypes.string.isRequired,
   width: PropTypes.number
@@ -247,7 +247,6 @@ class GroupSheetListing extends Component {
 
   }
 }
-
 GroupSheetListing.propTypes = {
   sheet:       PropTypes.object.isRequired,
   setSheetTag: PropTypes.func.isRequired,
@@ -316,7 +315,6 @@ class GroupInvitationBox extends Component {
               </div>);
   }
 }
-
 GroupInvitationBox.propTypes = {
   groupName: PropTypes.string.isRequired,
   onDataChange: PropTypes.func.isRequired,
@@ -359,7 +357,6 @@ class GroupMemberListing extends Component {
       </div>);
   }
 }
-
 GroupMemberListing.propTypes ={
   member:       PropTypes.object.isRequired,
   isAdmin:      PropTypes.bool,
@@ -389,7 +386,6 @@ class GroupInvitationListing extends Component {
       </div>);
   }
 }
-
 GroupInvitationListing.propTypes = {
   member:       PropTypes.object.isRequired,
   groupName:    PropTypes.string,
@@ -509,7 +505,6 @@ class GroupMemberListingActions extends Component {
       </div>);
   }
 }
-
 GroupMemberListingActions.propTypes = {
   member:       PropTypes.object.isRequired,
   groupName:    PropTypes.string.isRequired,
@@ -518,5 +513,6 @@ GroupMemberListingActions.propTypes = {
   isInvitation: PropTypes.bool,
   onDataChange: PropTypes.func.isRequired
 };
+
 
 module.exports = GroupPage;

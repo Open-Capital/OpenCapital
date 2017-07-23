@@ -4,6 +4,7 @@ const $       = require('./sefariaJquery');
 const Sefaria = require('./sefaria');
 import Component from 'react-class';
 
+
 class EditGroupPage extends Component {
   constructor(props) {
     super(props);
@@ -225,10 +226,10 @@ class EditGroupPage extends Component {
       </div>);
   }
 }
-
 EditGroupPage.propTypes = {
   initialData:  PropTypes.object // If present this view is for editing a group, otherwise for creating a new group
 };
+
 
 class FileInput extends Component {
   handleChange(e) {
@@ -247,5 +248,6 @@ class FileInput extends Component {
             </div>);
   }
 }
+
 
 module.exports = EditGroupPage;

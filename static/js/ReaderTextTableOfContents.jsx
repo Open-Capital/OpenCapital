@@ -14,6 +14,7 @@ const classNames = require('classnames');
 const PropTypes  = require('prop-types');
 import Component from 'react-class';
 
+
 class ReaderTextTableOfContents extends Component {
   // Menu for the Table of Contents for a single text
   constructor(props) {
@@ -320,7 +321,6 @@ class ReaderTextTableOfContents extends Component {
             </div>);
   }
 }
-
 ReaderTextTableOfContents.propTypes = {
   mode:             PropTypes.string.isRequired,
   title:            PropTypes.string.isRequired,
@@ -335,6 +335,7 @@ ReaderTextTableOfContents.propTypes = {
   showBaseText:     PropTypes.func.isRequired,
   selectVersion:    PropTypes.func
 };
+
 
 class TextDetails extends Component {
  render() {
@@ -376,11 +377,11 @@ class TextDetails extends Component {
       </div>);
   }
 }
-
 TextDetails.propTypes = {
   index:       PropTypes.object.isRequired,
   narrowPanel: PropTypes.bool,
 };
+
 
 class TextTableOfContentsNavigation extends Component {
   // The content section of the text table of contents that includes links to text sections,
@@ -519,7 +520,6 @@ class TextTableOfContentsNavigation extends Component {
     );
   }
 }
-
 TextTableOfContentsNavigation.propTypes = {
   schema:          PropTypes.object.isRequired,
   commentatorList: PropTypes.array,
@@ -531,6 +531,7 @@ TextTableOfContentsNavigation.propTypes = {
   narrowPanel:     PropTypes.bool,
   title:           PropTypes.string.isRequired,
 };
+
 
 class TabbedToggleSet extends Component {
   render() {
@@ -563,12 +564,12 @@ class TabbedToggleSet extends Component {
             </div>);
   }
 }
-
 TabbedToggleSet.propTypes = {
   options:     PropTypes.array.isRequired, // array of object with `name`. `text`, `heText`, `onPress`
   active:      PropTypes.string.isRequired,
   narrowPanel: PropTypes.bool
 };
+
 
 class SchemaNode extends Component {
   constructor(props) {
@@ -654,11 +655,11 @@ class SchemaNode extends Component {
     }
   }
 }
-
 SchemaNode.propTypes = {
   schema:      PropTypes.object.isRequired,
   refPath:     PropTypes.string.isRequired
 };
+
 
 class JaggedArrayNode extends Component {
   render() {
@@ -679,7 +680,6 @@ class JaggedArrayNode extends Component {
               refPath={this.props.refPath} />);
   }
 }
-
 JaggedArrayNode.propTypes = {
   schema:      PropTypes.object.isRequired,
   refPath:     PropTypes.string.isRequired
@@ -760,7 +760,6 @@ class JaggedArrayNodeSection extends Component {
     );
   }
 }
-
 JaggedArrayNodeSection.propTypes = {
   depth:           PropTypes.number.isRequired,
   sectionNames:    PropTypes.array.isRequired,
@@ -809,7 +808,6 @@ class ArrayMapNode extends Component {
     }
   }
 }
-
 ArrayMapNode.propTypes = {
   schema:      PropTypes.object.isRequired
 };
@@ -828,7 +826,6 @@ class CommentatorList extends Component {
     return (<TwoBox content={content} />);
   }
 }
-
 CommentatorList.propTypes = {
   commentatorList: PropTypes.array.isRequired,
   title:           PropTypes.string.isRequired,
@@ -869,7 +866,6 @@ class VersionsList extends Component {
       </div>);
   }
 }
-
 VersionsList.propTypes = {
   versionsList: PropTypes.array.isRequired,
   openVersion:  PropTypes.func.isRequired,
@@ -1074,7 +1070,6 @@ class VersionBlock extends Component {
 
   }
 }
-
 VersionBlock.propTypes = {
   title:           PropTypes.string.isRequired,
   version:         PropTypes.object.isRequired,
@@ -1084,7 +1079,6 @@ VersionBlock.propTypes = {
   showNotes:       PropTypes.bool,
   openVersion:     PropTypes.func
 };
-
 VersionBlock.defaultProps = {
   showHistory: true,
   showNotes: true
@@ -1162,7 +1156,6 @@ class ModeratorButtons extends Component {
             </div>);
   }
 }
-
 ModeratorButtons.propTypes = {
   title: PropTypes.string.isRequired,
 };
@@ -1186,14 +1179,13 @@ class ReadMoreText extends Component {
     </div>
   }
 }
-
 ReadMoreText.propTypes = {
   text: PropTypes.string.isRequired,
   initialWords: PropTypes.number,
 };
-
 ReadMoreText.defaultProps = {
   initialWords: 30
 };
+
 
 module.exports = ReaderTextTableOfContents;

@@ -13,6 +13,7 @@ const Sefaria    = require('./sefaria');
 const Footer     = require('./Footer');
 import Component from 'react-class';
 
+
 class ReaderNavigationCategoryMenu extends Component {
   // Navigation Menu for a single category of texts (e.g., "Tanakh", "Bavli")
   render() {
@@ -82,7 +83,6 @@ class ReaderNavigationCategoryMenu extends Component {
             </div>);
   }
 }
-
 ReaderNavigationCategoryMenu.propTypes = {
   category:            PropTypes.string.isRequired,
   categories:          PropTypes.array.isRequired,
@@ -192,7 +192,6 @@ class ReaderNavigationCategoryMenuContents extends Component {
       return (<div>{boxedContent}</div>);
   }
 }
-
 ReaderNavigationCategoryMenuContents.propTypes = {
   category:   PropTypes.string.isRequired,
   contents:   PropTypes.array.isRequired,
@@ -200,5 +199,6 @@ ReaderNavigationCategoryMenuContents.propTypes = {
   width:      PropTypes.number,
   nestLevel:  PropTypes.number
 };
+
 
 module.exports = ReaderNavigationCategoryMenu;

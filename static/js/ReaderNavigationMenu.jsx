@@ -18,6 +18,7 @@ const ReaderNavigationCategoryMenu = require('./ReaderNavigationCategoryMenu');
 const Footer     = require('./Footer');
 import Component from 'react-class';
 
+
 class ReaderNavigationMenu extends Component {
   // The Navigation menu for browsing and searching texts, plus some site links.
   constructor(props) {
@@ -291,7 +292,6 @@ class ReaderNavigationMenu extends Component {
     }
   }
 }
-
 ReaderNavigationMenu.propTypes = {
   categories:    PropTypes.array.isRequired,
   settings:      PropTypes.object.isRequired,
@@ -309,6 +309,7 @@ ReaderNavigationMenu.propTypes = {
   home:          PropTypes.bool,
   compare:       PropTypes.bool
 };
+
 
 class RecentPanel extends Component {
   render() {
@@ -364,7 +365,6 @@ class RecentPanel extends Component {
       );
   }
 }
-
 RecentPanel.propTypes = {
   closeNav:            PropTypes.func.isRequired,
   toggleLanguage:      PropTypes.func.isRequired,
@@ -375,5 +375,6 @@ RecentPanel.propTypes = {
   hideNavHeader:       PropTypes.bool,
   interfaceLang:       PropTypes.string
 };
+
 
 module.exports = ReaderNavigationMenu;

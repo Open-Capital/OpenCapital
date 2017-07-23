@@ -6,6 +6,7 @@ const classNames = require('classnames');
 const PropTypes  = require('prop-types');
 import Component      from 'react-class';
 
+
 class GlobalWarningMessage extends Component {
   close() {
     Sefaria.globalWarningMessage = null;
@@ -20,6 +21,7 @@ class GlobalWarningMessage extends Component {
       : null;
   }
 }
+
 
 class ReaderNavigationMenuSection extends Component {
   render() {
@@ -36,12 +38,12 @@ class ReaderNavigationMenuSection extends Component {
       );
   }
 }
-
 ReaderNavigationMenuSection.propTypes = {
   title:   PropTypes.string,
   heTitle: PropTypes.string,
   content: PropTypes.object
 };
+
 
 class TextBlockLink extends Component {
   // Monopoly card style link with category color at top
@@ -61,7 +63,6 @@ class TextBlockLink extends Component {
              </a>);
   }
 }
-
 TextBlockLink.propTypes = {
   sref:            PropTypes.string.isRequired,
   version:         PropTypes.string,
@@ -90,7 +91,6 @@ class LanguageToggleButton extends Component {
             </a>);
   }
 }
-
 LanguageToggleButton.propTypes = {
   toggleLanguage: PropTypes.func.isRequired,
   url:            PropTypes.string,
@@ -108,7 +108,6 @@ class BlockLink extends Component {
            </a>);
   }
 }
-
 BlockLink.propTypes = {
   title:         PropTypes.string,
   heTitle:       PropTypes.string,
@@ -117,10 +116,10 @@ BlockLink.propTypes = {
   inAppLink:     PropTypes.bool,
   interfaceLink: PropTypes.bool
 };
-
 BlockLink.defaultProps = {
   interfaceLink: false
 };
+
 
 class ToggleSet extends Component {
   // A set of options grouped together.
@@ -153,7 +152,6 @@ class ToggleSet extends Component {
       </div>);
   }
 }
-
 ToggleSet.propTypes = {
   name:          PropTypes.string.isRequired,
   setOption:     PropTypes.func.isRequired,
@@ -195,6 +193,7 @@ class ToggleOption extends Component {
       </div>);
   }
 }
+
 
 class ReaderNavigationMenuSearchButton extends Component {
   render() {
@@ -253,186 +252,6 @@ class CategoryColorLine extends Component {
   }
 }
 
-class AddToSourceSheetBox extends Component {
-  // In the main app, the function `addToSourceSheet` is executed in the ReaderApp,
-  // and collects the needed data from highlights and app state.
-  // It is used in external apps, liked gardens.  In those cases, it's wrapped in AddToSourceSheetWindow,
-  // refs and text are passed directly, and the add to source sheets API is invoked from within this object.
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      sheetsLoaded: false,
-      selectedSheet: null,
-      sheetListOpen: false,
-      showConfirm: false,
-      showLogin: false,
-    };
-  }
-  componentDidMount() {
-    this.loadSheets();
-  }
-  componentDidUpdate(prevProps, prevState) {
-    if (!prevProps.srefs.compare(this.props.srefs)) {
-      this.setState({showConfirm: false});
-    }
-  }
-  loadSheets() {
-    if (!Sefaria._uid) {
-      this.onSheetsLoad();
-    } else {
-      Sefaria.sheets.userSheets(Sefaria._uid, this.onSheetsLoad);
-    }
-  }
-  onSheetsLoad() {
-    this.setDefaultSheet();
-    this.setState({sheetsLoaded: true});
-  }
-  setDefaultSheet() {
-    if (this.state.selectedSheet) { return; }
-    if (!Sefaria._uid) {
-        this.setState({selectedSheet: {title: "Your Sheet"}});
-    } else {
-      var sheets = Sefaria.sheets.userSheets(Sefaria._uid);
-      if (!sheets.length) {
-        this.setState({selectedSheet: {title: "Create a New Sheet"}});
-      } else {
-        this.setState({selectedSheet: sheets[0]});
-      }
-    }
-  }
-  toggleSheetList() {
-    if (!Sefaria._uid) {
-      this.setState({showLogin: true});
-    } else {
-      this.setState({sheetListOpen: !this.state.sheetListOpen});
-    }
-  }
-  selectSheet(sheet) {
-    this.setState({selectedSheet: sheet, sheetListOpen: false});
-  }
-  addToSourceSheet() {
-    if (!Sefaria._uid) { this.setState({showLogin: true}); }
-    if (!this.state.selectedSheet || !this.state.selectedSheet.id) { return; }
-    if (this.props.addToSourceSheet) {
-      this.props.addToSourceSheet(this.state.selectedSheet.id, this.confirmAdd);
-    } else {
-      var url     = "/api/sheets/" + this.state.selectedSheet.id + "/add";
-      var source = {};
-      if (this.props.srefs) {
-        source.refs = this.props.srefs;
-        if (this.props.en) source.en = this.props.en;
-        if (this.props.he) source.he = this.props.he;
-      } else {
-        if (this.props.en && this.props.he) {
-          source.outsideBiText = {he: this.props.he, en: this.props.en};
-        } else {
-          source.outsideText = this.props.en || this.props.he;
-        }
-      }
-      var postData = {source: JSON.stringify(source)};
-      if (this.props.note) {
-        postData.note = this.props.note;
-      }
-      $.post(url, postData, this.confirmAdd);
-    }
-  }
-  createSheet(refs) {
-    var title = $(ReactDOM.findDOMNode(this)).find("input").val();
-    if (!title) { return; }
-    var sheet = {
-      title: title,
-      options: {numbered: 0},
-      sources: []
-    };
-    var postJSON = JSON.stringify(sheet);
-    $.post("/api/sheets/", {"json": postJSON}, function(data) {
-      Sefaria.sheets.clearUserSheets(Sefaria._uid);
-      this.selectSheet(data);
-    }.bind(this));
-  }
-  confirmAdd() {
-    if (this.props.srefs) {
-      Sefaria.site.track.event("Tools", "Add to Source Sheet Save", this.props.srefs.join("/"));
-    } else {
-      Sefaria.site.track.event("Tools", "Add to Source Sheet Save", "Outside Source");
-    }
-    this.setState({showConfirm: true});
-  }
-  render() {
-    if (this.state.showConfirm) {
-      return (<ConfirmAddToSheet sheetId={this.state.selectedSheet.id} />);
-    } else if (this.state.showLogin) {
-      return (<div className="addToSourceSheetBox sans">
-                <LoginPrompt />
-              </div>);
-    }
-    var sheets     = Sefaria._uid ? Sefaria.sheets.userSheets(Sefaria._uid) : null;
-    var sheetsList = Sefaria._uid && sheets ? sheets.map(function(sheet) {
-      var classes     = classNames({dropdownOption: 1, noselect: 1, selected: this.state.selectedSheet && this.state.selectedSheet.id == sheet.id});
-      var title = sheet.title ? sheet.title.stripHtml() : "Untitled Source Sheet";
-      var selectSheet = this.selectSheet.bind(this, sheet);
-      return (<div className={classes} onClick={selectSheet} key={sheet.id}>{title}</div>);
-    }.bind(this)) : (Sefaria._uid ? <LoadingMessage /> : null);
-
-    // Uses
-    return (
-      <div className="addToSourceSheetBox noselect sans">
-        <div className="dropdown">
-          <div className="dropdownMain noselect" onClick={this.toggleSheetList}>
-            <i className="dropdownOpenButton noselect fa fa-caret-down"></i>
-            {this.state.sheetsLoaded ? this.state.selectedSheet.title.stripHtml() : <LoadingMessage messsage="Loading your sheets..." heMessage="טוען את דפי המקורות שלך"/>}
-          </div>
-          {this.state.sheetListOpen ?
-          <div className="dropdownListBox noselect">
-            <div className="dropdownList noselect">
-              {sheetsList}
-            </div>
-            <div className="newSheet noselect">
-              <input className="newSheetInput noselect" placeholder="Name New Sheet"/>
-              <div className="button small noselect" onClick={this.createSheet} >
-                <span className="int-en">Create</span>
-                <span className="int-he">צור חדש</span>
-              </div>
-             </div>
-          </div>
-          : null}
-        </div>
-        <div className="button noselect fillWidth" onClick={this.addToSourceSheet}>
-          <span className="int-en noselect">Add to Sheet</span>
-          <span className="int-he noselect">הוסף לדף המקורות</span>
-        </div>
-      </div>);
-  }
-}
-
-AddToSourceSheetBox.propTypes = {
-  srefs:              PropTypes.array,
-  addToSourceSheet:   PropTypes.func,
-  fullPanel:          PropTypes.bool,
-  en:                 PropTypes.string,
-  he:                 PropTypes.string,
-  note:               PropTypes.string
-};
-
-class ConfirmAddToSheet extends Component {
-  render() {
-    return (<div className="confirmAddToSheet addToSourceSheetBox">
-              <div className="message">
-                <span className="int-en">Your source has been added.</span>
-                <span className="int-he">הטקסט נוסף בהצלחה לדף המקורות</span>
-              </div>
-              <a className="button white squareBorder" href={"/sheets/" + this.props.sheetId} target="_blank">
-                <span className="int-en">Go to Source Sheet</span>
-                <span className="int-he">עבור לדף המקורות</span>
-              </a>
-            </div>);
-  }
-}
-
-ConfirmAddToSheet.propTypes = {
-  sheetId: PropTypes.number.isRequired
-};
 
 class Note extends Component {
   // Public or private note in the Sidebar.
@@ -462,7 +281,6 @@ class Note extends Component {
               </div>);
   }
 }
-
 Note.propTypes = {
   text:            PropTypes.string.isRequired,
   ownerName:       PropTypes.string,
@@ -472,6 +290,7 @@ Note.propTypes = {
   isMyNote:        PropTypes.bool,
   editNote:        PropTypes.func
 };
+
 
 class LoginPrompt extends Component {
   render() {
@@ -493,10 +312,10 @@ class LoginPrompt extends Component {
       </div>);
   }
 }
-
 LoginPrompt.propTypes = {
   fullPanel: PropTypes.bool,
 };
+
 
 class InterruptingMessage extends Component {
   constructor(props) {
@@ -534,12 +353,12 @@ class InterruptingMessage extends Component {
     );
   }
 }
-
 InterruptingMessage.propTypes = {
   messageName: PropTypes.string.isRequired,
   messageHTML: PropTypes.string.isRequired,
   onClose: PropTypes.func.isRequired
 };
+
 
 class ThreeBox extends Component {
   // Wrap a list of elements into a three column table
@@ -606,7 +425,6 @@ class TwoBox extends Component {
       );
   }
 }
-
 TwoBox.propTypes = {
   content: PropTypes.array.isRequired
 };
@@ -623,13 +441,11 @@ class TwoOrThreeBox extends Component {
       }
   }
 }
-
 TwoOrThreeBox.propTypes = {
   content:    PropTypes.array.isRequired,
   width:      PropTypes.number.isRequired,
   threshhold: PropTypes.number
 };
-
 TwoOrThreeBox.defaultProps = {
   threshhold: 500
 };
@@ -671,7 +487,6 @@ class Dropdown extends Component {
         </div>);
   }
 }
-
 Dropdown.propTypes = {
   options:     PropTypes.array.isRequired, // Array of {label, value}
   onSelect:    PropTypes.func,
@@ -691,7 +506,6 @@ class LoadingMessage extends Component {
             </div>);
   }
 }
-
 LoadingMessage.propTypes = {
   message:   PropTypes.string,
   heMessage: PropTypes.string,
@@ -713,10 +527,10 @@ class TestMessage extends Component {
       </div>);
   }
 }
-
 TestMessage.propTypes = {
   hide:   PropTypes.func
 };
+
 
 class CategoryAttribution extends Component {
   render() {
@@ -731,10 +545,10 @@ class CategoryAttribution extends Component {
       : null;
   }
 }
-
 CategoryAttribution.propTypes = {
   categories: PropTypes.array.isRequired
 };
+
 
 class SheetTagLink extends Component {
   handleTagClick(e) {
@@ -745,11 +559,11 @@ class SheetTagLink extends Component {
     return (<a href={`/sheets/tags/${this.props.tag}`} onClick={this.handleTagClick}>{this.props.tag}</a>);
   }
 }
-
 SheetTagLink.propTypes = {
   tag:   PropTypes.string.isRequired,
   setSheetTag: PropTypes.func.isRequired
 };
+
 
 class SheetAccessIcon extends Component {
   render() {
@@ -760,10 +574,10 @@ class SheetAccessIcon extends Component {
       : null;
   }
 }
-
 SheetAccessIcon.propTypes = {
   sheet: PropTypes.object.isRequired
 };
+
 
 var openInNewTab = function(url) {
   var win = window.open(url, '_blank');
@@ -775,7 +589,6 @@ var backToS1 = function() {
   window.location = "/";
 };
 
-module.exports.AddToSourceSheetBox                       = AddToSourceSheetBox;
 module.exports.backToS1                                  = backToS1;
 module.exports.BlockLink                                 = BlockLink;
 module.exports.CategoryColorLine                         = CategoryColorLine;

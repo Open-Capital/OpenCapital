@@ -7,6 +7,7 @@ const PropTypes  = require('prop-types');
 const Footer     = require('./Footer');
 import Component from 'react-class';
 
+
 class UpdatesPanel extends Component {
   constructor(props) {
     super(props);
@@ -116,7 +117,6 @@ class UpdatesPanel extends Component {
       </div>);
   }
 }
-
 UpdatesPanel.propTypes = {
   interfaceLang:  PropTypes.string
 };
@@ -215,7 +215,6 @@ class NewUpdateForm extends Component {
     );
   }
 }
-
 NewUpdateForm.propTypes = {
   error:               PropTypes.string,
   handleSubmit:        PropTypes.func
@@ -268,7 +267,6 @@ class SingleUpdate extends Component {
       </div>);
   }
 }
-
 SingleUpdate.propTypes = {
   id:         PropTypes.string,
   type:         PropTypes.string,
@@ -276,5 +274,6 @@ SingleUpdate.propTypes = {
   onDelete:     PropTypes.func,
   date:         PropTypes.string
 };
+
 
 module.exports = UpdatesPanel;
