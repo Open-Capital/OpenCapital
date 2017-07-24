@@ -20,9 +20,6 @@ import Component          from 'react-class';
 class MyNotesPanel extends Component {
   componentDidMount() {
     this.loadData();
-  }
-  constructor(props) {
-    super(props);
     this.state = { numberToRender: 2 };
   }
   loadData() {
