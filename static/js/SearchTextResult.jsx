@@ -1,6 +1,6 @@
 const React      = require('react');
-const $          = require('./sefariaJquery');
-const Sefaria    = require('./sefaria');
+const $          = require('./sefaria/sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
 const PropTypes  = require('prop-types');
 import Component      from 'react-class';
 
@@ -22,7 +22,7 @@ class SearchTextResult extends Component {
         if(this.props.onResultClick) {
             event.preventDefault();
             var s = this.props.data._source;
-            Sefaria.site.track.event("Search", "Search Result Text Click", `${this.props.query} - ${s.ref}/${s.version}/${s.lang}`);
+            Sefaria.track.event("Search", "Search Result Text Click", `${this.props.query} - ${s.ref}/${s.version}/${s.lang}`);
             this.props.onResultClick(s.ref, s.version, s.lang, {"highlight": this.props.query}); //highlight not yet handled, above in ReaderApp.handleNavigationClick()
         }
     }

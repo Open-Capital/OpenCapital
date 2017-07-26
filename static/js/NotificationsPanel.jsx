@@ -6,8 +6,8 @@ const PropTypes  = require('prop-types');
 const classNames = require('classnames');
 const  Footer    = require('./Footer');
 const  ReactDOM  = require('react-dom');
-const  Sefaria   = require('./sefaria');
-const  $         = require('./sefariaJquery');
+const  Sefaria   = require('./sefaria/sefaria');
+const  $         = require('./sefaria/sefariaJquery');
 import Component from 'react-class';
 
 class NotificationsPanel extends Component {

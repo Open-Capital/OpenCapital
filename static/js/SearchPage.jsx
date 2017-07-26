@@ -7,8 +7,8 @@ const {
 }                      = require('./Misc');
 const React            = require('react');
 const ReactDOM         = require('react-dom');
-const $                = require('./sefariaJquery');
-const Sefaria          = require('./sefaria');
+const $                = require('./sefaria/sefariaJquery');
+const Sefaria          = require('./sefaria/sefaria');
 const classNames       = require('classnames');
 const PropTypes        = require('prop-types');
 const Footer           = require('./Footer');

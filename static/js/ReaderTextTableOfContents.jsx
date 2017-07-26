@@ -8,8 +8,8 @@ const {
 }                = require('./Misc');
 const React      = require('react');
 const ReactDOM   = require('react-dom');
-const $          = require('./sefariaJquery');
-const Sefaria    = require('./sefaria');
+const $          = require('./sefaria/sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
 const classNames = require('classnames');
 const PropTypes  = require('prop-types');
 import Component from 'react-class';
@@ -135,7 +135,7 @@ class ReaderTextTableOfContents extends Component {
     return `/download/version/${this.props.title} - ${this.state.dlVersionLanguage} - ${this.state.dlVersionTitle}.${this.state.dlVersionFormat}`;
   }
   recordDownload() {
-    Sefaria.site.track.event("Reader", "Version Download", `${this.props.title} / ${this.state.dlVersionTitle} / ${this.state.dlVersionLanguage} / ${this.state.dlVersionFormat}`);
+    Sefaria.track.event("Reader", "Version Download", `${this.props.title} / ${this.state.dlVersionTitle} / ${this.state.dlVersionLanguage} / ${this.state.dlVersionFormat}`);
     return true;
   }
   isBookToc() {

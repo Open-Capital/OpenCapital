@@ -1,5 +1,5 @@
 const React      = require('react');
-const Sefaria    = require('./sefaria');
+const Sefaria    = require('./sefaria/sefaria');
 const classNames = require('classnames');
 const PropTypes  = require('prop-types');
 import Component      from 'react-class';
@@ -12,10 +12,10 @@ class CategoryFilter extends Component {
     e.preventDefault();
     if (this.props.showBooks) {
       this.props.setFilter(this.props.category, this.props.updateRecent);
-      if (Sefaria.site) { Sefaria.site.track.event("Reader", "Category Filter Click", this.props.category); }
+      if (Sefaria.site) { Sefaria.track.event("Reader", "Category Filter Click", this.props.category); }
     } else {
       this.props.setConnectionsCategory(this.props.category);
-      if (Sefaria.site) { Sefaria.site.track.event("Reader", "Connections Category Click", this.props.category); }
+      if (Sefaria.site) { Sefaria.track.event("Reader", "Connections Category Click", this.props.category); }
     }
   }
   render() {
@@ -78,8 +78,8 @@ class TextFilter extends Component {
     var filter = this.props.filterSuffix ? this.props.book + this.props.filterSuffix : this.props.book;
     this.props.setFilter(filter, this.props.updateRecent);
     if (Sefaria.site) {
-      if (this.props.inRecentFilters) { Sefaria.site.track.event("Reader", "Text Filter in Recent Click", filter); }
-      else { Sefaria.site.track.event("Reader", "Text Filter Click", filter); }
+      if (this.props.inRecentFilters) { Sefaria.track.event("Reader", "Text Filter in Recent Click", filter); }
+      else { Sefaria.track.event("Reader", "Text Filter Click", filter); }
     }
   }
   render() {

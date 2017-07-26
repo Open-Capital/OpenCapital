@@ -1,7 +1,7 @@
 const React      = require('react');
 const PropTypes  = require('prop-types');
-const Sefaria    = require('./sefaria');
-const $          = require('./sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
+const $          = require('./sefaria/sefariaJquery');
 import Component from 'react-class';
 
 class ModeratorToolsPanel extends Component {

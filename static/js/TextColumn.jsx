@@ -6,8 +6,8 @@ const ReactDOM   = require('react-dom');
 const classNames = require('classnames');
 const PropTypes  = require('prop-types');
 const TextRange  = require('./TextRange');
-const $          = require('./sefariaJquery');
-const Sefaria    = require('./sefaria');
+const $          = require('./sefaria/sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
 import Component from 'react-class';
 
 class TextColumn extends Component {
@@ -179,7 +179,7 @@ class TextColumn extends Component {
         refs.splice(refs, 0, data.prev);
         this.loadingContentAtTop = true;
         this.props.updateTextColumn(refs);
-        if (Sefaria.site) { Sefaria.site.track.event("Reader", "Infinite Scroll", "Up"); }
+        Sefaria.track.event("Reader", "Infinite Scroll", "Up");
       }
     } else if ( lastBottom < windowHeight + 80 ) {
       // DOWN: add the next section to bottom
@@ -193,7 +193,7 @@ class TextColumn extends Component {
       if (data && data.next) {
         refs.push(data.next);
         this.props.updateTextColumn(refs);
-        if (Sefaria.site) { Sefaria.site.track.event("Reader", "Infinite Scroll", "Down"); }
+        Sefaria.track.event("Reader", "Infinite Scroll", "Down");
       }
     }  else {
       // nothing happens

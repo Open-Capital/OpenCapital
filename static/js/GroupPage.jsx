@@ -7,8 +7,8 @@ const {
 const React      = require('react');
 const PropTypes  = require('prop-types');
 const classNames = require('classnames');
-const $          = require('./sefariaJquery');
-const Sefaria    = require('./sefaria');
+const $          = require('./sefaria/sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
 const Footer     = require('./Footer');
 import Component from 'react-class';
 

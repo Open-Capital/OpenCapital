@@ -5,10 +5,10 @@ const {
 }                = require('./Misc');
 const React      = require('react');
 const PropTypes  = require('prop-types');
-const  ReactDOM  = require('react-dom');
+const ReactDOM   = require('react-dom');
 const classNames = require('classnames');
-const  $         = require('./sefariaJquery');
-const  Sefaria   = require('./sefaria');
+const $          = require('./sefaria/sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
 const ReaderPanel= require('./ReaderPanel');
 import Component from 'react-class';
 
@@ -135,7 +135,7 @@ class Header extends Component {
   submitSearch(query) {
     var override = query.match(this._searchOverrideRegex());
     if (override) {
-      if (Sefaria.site) { Sefaria.site.track.event("Search", "Search Box Navigation - Book Override", override[1]); }
+      if (Sefaria.site) { Sefaria.track.event("Search", "Search Box Navigation - Book Override", override[1]); }
       this.closeSearchAutocomplete();
       this.showSearch(override[1]);
       return;
@@ -150,19 +150,19 @@ class Header extends Component {
 
       if (d["is_ref"]) {
         var action = d["is_book"] ? "Search Box Navigation - Book" : "Search Box Navigation - Citation";
-        Sefaria.site.track.event("Search", action, query);
+        Sefaria.track.event("Search", action, query);
         this.clearSearchBox();
         this.handleRefClick(d["ref"]);  //todo: pass an onError function through here to the panel onError function which redirects to search
       } else if (d["type"] == "Person") {
-        Sefaria.site.track.event("Search", "Search Box Navigation - Person", query);
+        Sefaria.track.event("Search", "Search Box Navigation - Person", query);
         this.closeSearchAutocomplete();
         this.showPerson(d["key"]);
       } else if (d["type"] == "TocCategory") {
-        Sefaria.site.track.event("Search", "Search Box Navigation - Category", query);
+        Sefaria.track.event("Search", "Search Box Navigation - Category", query);
         this.closeSearchAutocomplete();
         this.showLibrary(d["key"]);  // "key" holds the category path
       } else {
-        Sefaria.site.track.event("Search", "Search Box Search", query);
+        Sefaria.track.event("Search", "Search Box Search", query);
         this.closeSearchAutocomplete();
         this.showSearch(query);
       }

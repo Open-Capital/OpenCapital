@@ -3,7 +3,7 @@ const {
 }                = require('./Misc');
 const React      = require('react');
 const ReactDOM   = require('react-dom');
-const Sefaria    = require('./sefaria');
+const Sefaria    = require('./sefaria/sefaria');
 const classNames = require('classnames');
 const PropTypes  = require('prop-types');
 import Component      from 'react-class';

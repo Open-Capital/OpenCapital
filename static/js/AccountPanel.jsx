@@ -8,7 +8,7 @@ const React      = require('react');
 const PropTypes  = require('prop-types');
 const classNames = require('classnames');
 const Footer     = require('./Footer');
-const $          = require('./sefariaJquery');
+const $          = require('./sefaria/sefariaJquery');
 import Component from 'react-class';
 
 class AccountPanel extends Component {

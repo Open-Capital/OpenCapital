@@ -12,8 +12,8 @@ const {
 const React                  = require('react');
 const PropTypes              = require('prop-types');
 const ReactDOM               = require('react-dom');
-const Sefaria                = require('./sefaria');
-const $                      = require('./sefariaJquery');
+const Sefaria                = require('./sefaria/sefaria');
+const $                      = require('./sefaria/sefariaJquery');
 const TextRange              = require('./TextRange');
 const TextList               = require('./TextList');
 const ConnectionsPanelHeader = require('./ConnectionsPanelHeader');
@@ -426,16 +426,16 @@ class SheetListing extends Component {
   handleSheetClick() {
     //console.log("Sheet Click Handled");
     if (Sefaria._uid == this.props.sheet.owner) {
-      Sefaria.site.track.event("Tools", "My Sheet Click", this.props.sheet.sheetUrl);
+      Sefaria.track.event("Tools", "My Sheet Click", this.props.sheet.sheetUrl);
     } else {
-      Sefaria.site.track.event("Tools", "Sheet Click", this.props.sheet.sheetUrl);
+      Sefaria.track.event("Tools", "Sheet Click", this.props.sheet.sheetUrl);
     }
   }
   handleSheetOwnerClick() {
-    Sefaria.site.track.event("Tools", "Sheet Owner Click", this.props.sheet.ownerProfileUrl);
+    Sefaria.track.event("Tools", "Sheet Owner Click", this.props.sheet.ownerProfileUrl);
   }
   handleSheetTagClick(tag) {
-    Sefaria.site.track.event("Tools", "Sheet Tag Click", tag);
+    Sefaria.track.event("Tools", "Sheet Tag Click", tag);
   }
   render() {
     var sheet = this.props.sheet;
@@ -484,14 +484,14 @@ class ToolsList extends Component {
         var path = "/edit/" + refString;
         var nextParam = "?next=" + encodeURIComponent(currentPath);
         path += nextParam;
-        Sefaria.site.track.event("Tools", "Edit Text Click", refString,
+        Sefaria.track.event("Tools", "Edit Text Click", refString,
           {hitCallback: () =>  window.location = path}
         );
     }.bind(this) : null;
 
     var addTranslation = function() {
       var nextParam = "?next=" + Sefaria.util.currentPath();
-      Sefaria.site.track.event("Tools", "Add Translation Click", this.props.srefs[0],
+      Sefaria.track.event("Tools", "Add Translation Click", this.props.srefs[0],
           {hitCallback: () => {window.location = "/translate/" + this.props.srefs[0] + nextParam}}
       );
     }.bind(this);
@@ -624,7 +624,7 @@ class AddNoteBox extends Component {
         } else {
           Sefaria.addPrivateNote(data);
         }
-        Sefaria.site.track.event("Tools", "Note Save " + ((this.state.isPrivate)?"Private":"Public"), this.props.srefs.join("/"));
+        Sefaria.track.event("Tools", "Note Save " + ((this.state.isPrivate)?"Private":"Public"), this.props.srefs.join("/"));
         $(ReactDOM.findDOMNode(this)).find(".noteText").val("");
         this.props.onSave();
       } else {
@@ -649,7 +649,7 @@ class AddNoteBox extends Component {
       url: url,
       success: function() {
         Sefaria.clearPrivateNotes();
-        Sefaria.site.track.event("Tools", "Delete Note", this.props.noteId);
+        Sefaria.track.event("Tools", "Delete Note", this.props.noteId);
         this.props.onDelete();
       }.bind(this),
       error: function() {
@@ -798,7 +798,7 @@ class AddConnectionBox extends Component {
       if (data.error) {
         alert(data.error);
       } else {
-        Sefaria.site.track.event("Tools", "Add Connection", this.props.srefs.join("/"));
+        Sefaria.track.event("Tools", "Add Connection", this.props.srefs.join("/"));
         Sefaria.clearLinks();
         this.props.onSave();
       }

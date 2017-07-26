@@ -4,8 +4,8 @@ const {
 }                = require('./Misc');
 const React      = require('react');
 const ReactDOM   = require('react-dom');
-const $          = require('./sefariaJquery');
-const Sefaria    = require('./sefaria');
+const $          = require('./sefaria/sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
 const classNames = require('classnames');
 const PropTypes  = require('prop-types');
 import Component from 'react-class';
@@ -110,9 +110,9 @@ class AddToSourceSheetBox extends Component {
   }
   confirmAdd() {
     if (this.props.srefs) {
-      Sefaria.site.track.event("Tools", "Add to Source Sheet Save", this.props.srefs.join("/"));
+      Sefaria.track.event("Tools", "Add to Source Sheet Save", this.props.srefs.join("/"));
     } else {
-      Sefaria.site.track.event("Tools", "Add to Source Sheet Save", "Outside Source");
+      Sefaria.track.event("Tools", "Add to Source Sheet Save", "Outside Source");
     }
     this.setState({showConfirm: true});
   }

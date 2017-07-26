@@ -1,9 +1,9 @@
-const React    = require('react');
-const ReactDOM = require('react-dom');
-const PropTypes= require('prop-types');
+const React      = require('react');
+const ReactDOM   = require('react-dom');
+const PropTypes  = require('prop-types');
 const classNames = require('classnames');
-const $        = require('./sefariaJquery');
-const Sefaria  = require('./sefaria');
+const $          = require('./sefaria/sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
 import Component from 'react-class'
 
 class TextRange extends Component {
@@ -57,7 +57,7 @@ componentDidMount() {
     if (this.props.onRangeClick) {
       //Click on the body of the TextRange itself from TextList
       this.props.onRangeClick(this.props.sref);
-      if (Sefaria.site) { Sefaria.site.track.event("Reader", "Click Text from TextList", this.props.sref); }
+      Sefaria.track.event("Reader", "Click Text from TextList", this.props.sref);
     }
   }
   getText() {
@@ -363,13 +363,13 @@ class TextSegment extends Component {
       var ref = Sefaria.humanRef($(event.target).attr("data-ref"));
       this.props.onCitationClick(ref, this.props.sref);
       event.stopPropagation();
-      Sefaria.site.track.event("Reader", "Citation Link Click", ref);
+      Sefaria.track.event("Reader", "Citation Link Click", ref);
     } else if ($(event.target).is("sup") || $(event.target).parents("sup").size()) {
       this.props.onFootnoteClick(event);
       event.stopPropagation();
     } else if (this.props.onSegmentClick) {
       this.props.onSegmentClick(this.props.sref);
-      Sefaria.site.track.event("Reader", "Text Segment Click", this.props.sref);
+      Sefaria.track.event("Reader", "Text Segment Click", this.props.sref);
     }
   }
   render() {

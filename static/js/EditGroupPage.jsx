@@ -1,7 +1,7 @@
 const React      = require('react');
 const PropTypes  = require('prop-types');
-const $       = require('./sefariaJquery');
-const Sefaria = require('./sefaria');
+const $          = require('./sefaria/sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
 import Component from 'react-class';
 
 

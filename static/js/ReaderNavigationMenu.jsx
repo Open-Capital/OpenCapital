@@ -12,8 +12,8 @@ const React      = require('react');
 const ReactDOM   = require('react-dom');
 const PropTypes  = require('prop-types');
 const classNames = require('classnames');
-const Sefaria    = require('./sefaria');
-const $          = require('./sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
+const $          = require('./sefaria/sefariaJquery');
 const ReaderNavigationCategoryMenu = require('./ReaderNavigationCategoryMenu');
 const Footer     = require('./Footer');
 import Component from 'react-class';
@@ -79,12 +79,12 @@ class ReaderNavigationMenu extends Component {
       } else {
         this.props.onTextClick(ref, version, versionLanguage);
       }
-      if (Sefaria.site) { Sefaria.site.track.event("Reader", "Navigation Text Click", ref); }
+      if (Sefaria.site) { Sefaria.track.event("Reader", "Navigation Text Click", ref); }
     } else if ($(event.target).hasClass("catLink") || $(event.target).parent().hasClass("catLink")) {
       var cats = $(event.target).attr("data-cats") || $(event.target).parent().attr("data-cats");
       cats = cats.split("|");
       this.props.setCategories(cats);
-      if (Sefaria.site) { Sefaria.site.track.event("Reader", "Navigation Sub Category Click", cats.join(" / ")); }
+      if (Sefaria.site) { Sefaria.track.event("Reader", "Navigation Sub Category Click", cats.join(" / ")); }
     }
   }
   handleSearchKeyUp(event) {

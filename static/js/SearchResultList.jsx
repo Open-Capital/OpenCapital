@@ -4,8 +4,9 @@ const {
 const React             = require('react');
 const ReactDOM          = require('react-dom');
 const extend            = require('extend');
-const $                 = require('./sefariaJquery');
-const Sefaria           = require('./sefaria');
+const $                 = require('./sefaria/sefariaJquery');
+const Sefaria           = require('./sefaria/sefaria');
+const { FilterNode }    = require('./sefaria/search');
 const SearchTextResult  = require('./SearchTextResult');
 const SearchSheetResult = require('./SearchSheetResult');
 const SearchFilters     = require('./SearchFilters');
@@ -181,7 +182,7 @@ class SearchResultList extends Component {
                     hits: extend(this.state.hits, {"sheet": data.hits.hits}),
                     totals: extend(this.state.totals, {"sheet": data.hits.total})
                   });
-                  Sefaria.site.track.event("Search", "Query: sheet", props.query, data.hits.total);
+                  Sefaria.track.event("Search", "Query: sheet", props.query, data.hits.total);
 
                 if(isCompletionStep) {
                   this._loadRemainder("sheet", this.initialQuerySize, data.hits.total, data.hits.hits);
@@ -209,7 +210,7 @@ class SearchResultList extends Component {
                 });
                 var filter_label = (request_applied && request_applied.length > 0)? (" - " + request_applied.join("|")) : "";
                 var query_label = props.query + filter_label;
-                Sefaria.site.track.event("Search", "Query: text", query_label, data.hits.total);
+                Sefaria.track.event("Search", "Query: text", query_label, data.hits.total);
                 if (data.aggregations) {
                   if (data.aggregations.category) {
                     var ftree = this._buildFilterTree(data.aggregations.category.buckets);
@@ -319,7 +320,7 @@ class SearchResultList extends Component {
       var filters = [];
       var registry = {};
 
-      var commentaryNode = new Sefaria.search.FilterNode();
+      var commentaryNode = new FilterNode();
 
 
       for(var j = 0; j < Sefaria.search_toc.length; j++) {
@@ -343,14 +344,14 @@ class SearchResultList extends Component {
             });
             registry[commentaryNode.path] = commentaryNode;
             filters.push(commentaryNode);
-            commentaryNode = new Sefaria.search.FilterNode();
+            commentaryNode = new FilterNode();
           }
       }
 
       return {availableFilters: filters, registry: registry};
 
       function walk(branch, parentNode) {
-          var node = new Sefaria.search.FilterNode();
+          var node = new FilterNode();
 
           node["docCount"] = 0;
 

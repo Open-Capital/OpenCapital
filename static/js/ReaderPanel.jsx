@@ -11,8 +11,8 @@ const classNames = require('classnames');
 const ReactDOM   = require('react-dom');
 const PropTypes  = require('prop-types');
 const extend     = require('extend');
-const Sefaria    = require('./sefaria');
-const $          = require('./sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
+const $          = require('./sefaria/sefariaJquery');
 const TextColumn = require('./TextColumn');
 const ReaderNavigationMenu      = require('./ReaderNavigationMenu');
 const {
@@ -291,10 +291,10 @@ class ReaderPanel extends Component {
   toggleLanguage() {
     if (this.state.settings.language == "hebrew") {
         this.setOption("language", "english");
-        if (Sefaria.site) { Sefaria.site.track.event("Reader", "Change Language", "english");}
+        if (Sefaria.site) { Sefaria.track.event("Reader", "Change Language", "english");}
     } else {
         this.setOption("language", "hebrew");
-        if (Sefaria.site) { Sefaria.site.track.event("Reader", "Change Language", "hebrew");}
+        if (Sefaria.site) { Sefaria.track.event("Reader", "Change Language", "hebrew");}
     }
   }
   openSearch(query) {
@@ -338,9 +338,9 @@ class ReaderPanel extends Component {
       this.props.openComparePanel(true);
       return;
     }
-    Sefaria.site.track.event("Tools", mode + " Click"); // TODO Shouldn't be tracking clicks here, this function is called programmatically
+    Sefaria.track.event("Tools", mode + " Click"); // TODO Shouldn't be tracking clicks here, this function is called programmatically
     if (!Sefaria._uid && mode in loginRequired) {
-      Sefaria.site.track.event("Tools", "Prompt Login");
+      Sefaria.track.event("Tools", "Prompt Login");
       mode = "Login";
     }
     var state = {connectionsMode: mode};

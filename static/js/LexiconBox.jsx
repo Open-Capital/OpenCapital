@@ -2,7 +2,7 @@ const {
   LoadingMessage,
 }                = require('./Misc');
 const React      = require('react');
-const Sefaria    = require('./sefaria');
+const Sefaria    = require('./sefaria/sefaria');
 const classNames = require('classnames');
 const PropTypes  = require('prop-types');
 import Component      from 'react-class';
@@ -47,7 +47,7 @@ class LexiconBox extends Component {
 
         var action = (data.length == 0)? "Open No Result": "Open";
         action += " / " + oref.categories.join("/") + "/" + oref.book;
-        Sefaria.site.track.event("Lexicon", action, words);
+        Sefaria.track.event("Lexicon", action, words);
 
         // console.log('gotten data from Sefaria.js, state re-set: ', this, data);
       }.bind(this));

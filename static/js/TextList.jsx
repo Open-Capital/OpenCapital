@@ -5,7 +5,7 @@ const {
   RecentFilterSet,
 }                = require('./ConnectionFilters');
 const React      = require('react');
-const Sefaria    = require('./sefaria');
+const Sefaria    = require('./sefaria/sefaria');
 const PropTypes  = require('prop-types');
 const TextRange  = require('./TextRange');
 import Component      from 'react-class';

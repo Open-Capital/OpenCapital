@@ -9,7 +9,7 @@ const {
 const React      = require('react');
 const classNames = require('classnames');
 const PropTypes  = require('prop-types');
-const Sefaria    = require('./sefaria');
+const Sefaria    = require('./sefaria/sefaria');
 const Footer     = require('./Footer');
 import Component from 'react-class';
 

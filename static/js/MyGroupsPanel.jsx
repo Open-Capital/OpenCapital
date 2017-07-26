@@ -5,7 +5,7 @@ const React      = require('react');
 const PropTypes  = require('prop-types');
 const classNames = require('classnames');
 const Footer     = require('./Footer');
-const Sefaria    = require('./sefaria');
+const Sefaria    = require('./sefaria/sefaria');
 import Component from 'react-class';
 
 class MyGroupsPanel extends Component {

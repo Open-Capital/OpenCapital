@@ -5,10 +5,10 @@ const React         = require('react');
 const classNames    = require('classnames');
 const extend        = require('extend');
 const PropTypes     = require('prop-types');
-const Sefaria       = require('./sefaria');
+const Sefaria       = require('./sefaria/sefaria');
 const Header        = require('./Header');
 const ReaderPanel   = require('./ReaderPanel');
-const $             = require('./sefariaJquery');
+const $             = require('./sefaria/sefariaJquery');
 const EditGroupPage = require('./EditGroupPage');
 const Footer        = require('./Footer');
 import Component from 'react-class';
@@ -204,19 +204,17 @@ class ReaderApp extends Component {
     // console.log(state);
     if (state) {
       var kind = "";
-      if (Sefaria.site) { Sefaria.site.track.event("Reader", "Pop State", kind); }
+      if (Sefaria.track) { Sefaria.track.event("Reader", "Pop State", kind); }
       this.justPopped = true;
       this.setState(state);
       this.setContainerMode();
     }
   }
   _canTrackPageview() {
-      if (!Sefaria.site) { return false; }
+      if (!Sefaria.track) { return false; }
       return true;
   }
   trackPageview() {
-      if (!this._canTrackPageview()) { return; }
-
       var headerPanel = this.state.header.menuOpen || (!this.state.panels.length && this.state.header.mode === "Header");
       var panels = headerPanel ? [this.state.header] : this.state.panels;
       var textPanels = panels.filter(panel => (panel.refs.length || panel.bookRef) && panel.mode !== "Connections");
@@ -225,52 +223,52 @@ class ReaderApp extends Component {
       // Set Page Type
       // Todo: More specificity for sheets - browsing, reading, writing
       if (panels.length < 1) { debugger; }
-      else { Sefaria.site.track.setPageType(panels[0].menuOpen || panels[0].mode); }
+      else { Sefaria.track.setPageType(panels[0].menuOpen || panels[0].mode); }
 
       // Number of panels as e.g. "2" meaning 2 text panels or "3.2" meaning 3 text panels and 2 connection panels
       if (connectionPanels.length == 0) {
-        Sefaria.site.track.setNumberOfPanels(textPanels.length.toString());
+        Sefaria.track.setNumberOfPanels(textPanels.length.toString());
       } else {
-        Sefaria.site.track.setNumberOfPanels(`${textPanels.length}.${connectionPanels.length}`);
+        Sefaria.track.setNumberOfPanels(`${textPanels.length}.${connectionPanels.length}`);
       }
 
       // refs - per text panel
       var refs =  textPanels.map(panel => (panel.refs.length) ? panel.refs.slice(-1)[0] : panel.bookRef);
-      Sefaria.site.track.setRef(refs.join(" | "));
+      Sefaria.track.setRef(refs.join(" | "));
 
       // Book name (Index record primary name) - per text panel
       var bookNames = refs.map(ref => Sefaria.parseRef(ref).index).filter(b => !!b);
-      Sefaria.site.track.setBookName(bookNames.join(" | "));
+      Sefaria.track.setBookName(bookNames.join(" | "));
 
       // Indexes - per text panel
       var indexes = bookNames.map(b => Sefaria.index(b)).filter(i => !!i);
 
       // categories - per text panel
       var primaryCats = indexes.map(i => (i.dependence === "Commentary")? i.categories[0] + " Commentary": i.categories[0]);
-      Sefaria.site.track.setPrimaryCategory(primaryCats.join(" | "));
+      Sefaria.track.setPrimaryCategory(primaryCats.join(" | "));
 
       var secondaryCats = indexes.map(i => {
           var cats = i.categories.filter(cat=> cat != "Commentary").slice(1);
           return (cats.length >= 1) ? cats[0] : ""
       });
-      Sefaria.site.track.setSecondaryCategory(secondaryCats.join(" | "));
+      Sefaria.track.setSecondaryCategory(secondaryCats.join(" | "));
 
       // panel content languages - per text panel
       var contentLanguages = textPanels.map(panel => panel.settings.language);
-      Sefaria.site.track.setContentLanguage(contentLanguages.join(" | "));
+      Sefaria.track.setContentLanguage(contentLanguages.join(" | "));
 
       // Set Versions - per text panel
       var versionTitles = textPanels.map(p => p.version?`${p.version}(${p.versionLanguage})`:"default version");
-      Sefaria.site.track.setVersionTitle(versionTitles.join(" | "));
+      Sefaria.track.setVersionTitle(versionTitles.join(" | "));
 
       // Set Sidebar usages
       // todo: handle toolbar selections
       var sidebars = connectionPanels.map(panel => panel.filter.length ? panel.filter.join("+") : "all");
-      Sefaria.site.track.setSidebars(sidebars.join(" | "));
+      Sefaria.track.setSidebars(sidebars.join(" | "));
 
       // After setting the dimensions, post the hit
       var url = window.location.pathname + window.location.search;
-      Sefaria.site.track.pageview(url);
+      Sefaria.track.pageview(url);
 
       if (!this.state.initialAnalyticsTracked) {
         this.setState({initialAnalyticsTracked: true});
@@ -888,11 +886,11 @@ class ReaderApp extends Component {
       panel.settings.language = (panel.versionLanguage == "he")? "hebrew": "english";
 
       this.setCachedVersion(oRef.indexTitle, panel.versionLanguage, panel.version);
-      Sefaria.site.track.event("Reader", "Choose Version", `${oRef.indexTitle} / ${panel.version} / ${panel.versionLanguage}`)
+      Sefaria.track.event("Reader", "Choose Version", `${oRef.indexTitle} / ${panel.version} / ${panel.versionLanguage}`)
     } else {
       panel.version = null;
       panel.versionLanguage = null;
-      Sefaria.site.track.event("Reader", "Choose Version", `${oRef.indexTitle} / default version / ${panel.settings.language}`)
+      Sefaria.track.event("Reader", "Choose Version", `${oRef.indexTitle} / default version / ${panel.settings.language}`)
     }
 
     if((this.state.panels.length > n+1) && this.state.panels[n+1].mode == "Connections"){
@@ -1057,7 +1055,7 @@ class ReaderApp extends Component {
       menuOpen: "compare",
       openSidebarAsConnect: typeof connectAfter !== "undefined" ? connectAfter : false,
     });
-    Sefaria.site.track.event("Reader", "Other Text Click");
+    Sefaria.track.event("Reader", "Other Text Click");
     this.state.panels[n] = comparePanel;
     this.setState({panels: this.state.panels});
   }

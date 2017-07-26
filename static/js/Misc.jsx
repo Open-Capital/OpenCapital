@@ -1,7 +1,7 @@
 const React      = require('react');
 const ReactDOM   = require('react-dom');
-const $          = require('./sefariaJquery');
-const Sefaria    = require('./sefaria');
+const $          = require('./sefaria/sefariaJquery');
+const Sefaria    = require('./sefaria/sefaria');
 const classNames = require('classnames');
 const PropTypes  = require('prop-types');
 import Component      from 'react-class';
@@ -169,7 +169,7 @@ class ToggleOption extends Component {
 
   handleClick() {
     this.props.setOption(this.props.set, this.props.name);
-    if (Sefaria.site) { Sefaria.site.track.event("Reader", "Display Option Click", this.props.set + " - " + this.props.name); }
+    if (Sefaria.site) { Sefaria.track.event("Reader", "Display Option Click", this.props.set + " - " + this.props.name); }
   }
   render() {
     var classes = {toggleOption: 1, on: this.props.on };
@@ -332,7 +332,7 @@ class InterruptingMessage extends Component {
   markAsRead() {
     Sefaria._api("/api/interrupting-messages/read/" + this.props.messageName, function (data) {});
     $.cookie(this.props.messageName, true, { "path": "/" });
-    Sefaria.site.track.event("Interrupting Message", "read", this.props.messageName, { nonInteraction: true });
+    Sefaria.track.event("Interrupting Message", "read", this.props.messageName, { nonInteraction: true });
     Sefaria.interruptingMessage = null;
   }
   render() {

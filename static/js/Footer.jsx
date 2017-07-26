@@ -1,10 +1,10 @@
 const React      = require('react');
-const Sefaria = require('./sefaria');
+const Sefaria    = require('./sefaria/sefaria');
 import Component from 'react-class';
 
 class Footer extends Component {
   trackLanguageClick(language){
-    Sefaria.site.track.setInterfaceLanguage('interface language footer', language);
+    Sefaria.track.setInterfaceLanguage('interface language footer', language);
   }
   render(){
     var currentPath = Sefaria.util.currentPath();
