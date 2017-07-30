@@ -1,23 +1,15 @@
-## New Interfaces for Jewish Texts
+## New Interfaces for Marx's Capital and related texts
 
-Sefaria is creating interfaces, apps (like a source sheet builder) and infrastructure (like an API and a structured dataset) for Jewish texts and textual learning. Our website is up at www.sefaria.org.
-
-You can find outputs of our entire database in [Sefaria-Export](https://github.com/Sefaria/Sefaria-Export).
-
-Interested developers should join the [sefara-dev mailing list](https://groups.google.com/forum/#!forum/sefaria-dev).
-
-For general discussion about the project, please post to the [Sefaria Forum](https://groups.google.com/forum/?fromgroups#!forum/sefaria).
-
-You can post bugs or request/discuss features on [GitHub Issues](https://github.com/blockspeiser/Sefaria-Project/issues?direction=desc&page=1&sort=created&state=open). Tackling an issue marked as a "Starter Project" is a good way to sink your teeth into Sefaria.
-
-If you're interested in working on a project you see listed here, please email the [sefara-dev mailing list](https://groups.google.com/forum/#!forum/sefaria-dev).
+OpenCapital is creating interfaces, apps (like a source sheet builder) and infrastructure (like an API and a structured dataset) for Marx's Capital and textual learning based on the [Sefaria Project](https://github.com/Sefaria/Sefaria-Project)
 
 ***
 
 ### Getting Started
 
-#### Install Python
-Most UNIX systems come with a python interpreter pre-installed. 
+#### Install Python 2.7.x
+Most UNIX systems come with a python interpreter pre-installed.
+
+Make sure you're using Python 2.7 as some of the Sefaria dependencies require it.
 ##### For Windows:
 
 Go to the [Python Download Page](https://www.python.org/download/releases/2.7.6) and download and install python.
@@ -78,6 +70,12 @@ A MongoDB dump of our database is available at http://dev.sefaria.org/static/dum
     mongorestore --drop
 
 This will create (or overwrite) a mongo database called `sefaria`.
+
+#### Install ElasticSearch for the search engine to function:
+
+Sefaria Project uses ElasticSearch to enable searching the texts. ElasticSearch requires Java, preferrably a [Server JVM](http://www.oracle.com/technetwork/java/javase/downloads/server-jre8-downloads-2133154.html) on Windows. Linux platforms may not need this special JRE, and either Oracle's official JVM or the OpenJDK JVM is acceptable.
+
+ElasticSearch can be found [here](https://www.elastic.co/downloads/elasticsearch).
 
 #### Set up Django's local server
 `manage.py` is used to run and to manage the local server.  It is located in the root directory of the `Sefaria-Project` code base. 
@@ -150,16 +148,6 @@ The shell script `cli` will invoke a python interpreter with the core models loa
     >>> p = LinkSet(Ref("Genesis 13"))
     >>> p.count()
     226
-
-## Thanks
-
-We're grateful to the following orgazations for providing us with donated services:
-
-- [BrowserStack](https://www.browserstack.com/)
-- [Google Apps for Work](https://apps.google.com/)
-- [PyCharm](https://www.jetbrains.com/pycharm/)
-- [Slack](https://slack.com)
-
 
 ## License
 
