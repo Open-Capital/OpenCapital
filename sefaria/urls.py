@@ -86,7 +86,6 @@ urlpatterns += patterns('reader.views',
     (r'^translation-requests/completed?', 'completed_translation_requests'),
     (r'^translation-requests/featured-completed?', 'completed_featured_translation_requests'),
     (r'^translation-requests/?', 'translation_requests'),
-    (r'^contests/(?P<page>new-profiles-contest)$', 'serve_static'),
     (r'^contests/(?P<slug>.+)$', 'contest_splash'),
     (r'^mishnah-contest-2013/?$', lambda x: HttpResponseRedirect('/contests/mishnah-contest-2013')),
 )
@@ -236,6 +235,11 @@ urlpatterns += patterns('',
     url(r'^password/reset/confirm/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm', name='password_reset_confirm'),
     url(r'^password/reset/complete/$', 'django.contrib.auth.views.password_reset_complete', name='password_reset_complete'),
     url(r'^password/reset/done/$', 'django.contrib.auth.views.password_reset_done', name='password_reset_done'),
+)
+
+# Compare Page
+urlpatterns += patterns('sefaria.views',
+    url(r'^compare/(?P<ref1>[^/]+)/(?P<ref2>[^/]+)/(?P<lang>en|he)/?(?P<v1>[^/]+)?/?(?P<v2>[^/]+)?$', 'compare')
 )
 
 static_pages = [
