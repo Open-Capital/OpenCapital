@@ -105,3 +105,8 @@ webpack-stats.json
 
 
 /random_files
+
+# Local project files #
+#######################
+.vscode/
+
