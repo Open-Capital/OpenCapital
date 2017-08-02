@@ -861,46 +861,46 @@ class PostTextTest(SefariaTestCase):
         #todo: better way to do this?
         self.assertEqual(0, LinkSet({"refs": {"$regex": textRegex}}).count())
 
-    """def test_post_commentary_text(self):
-        """
-        Tests:
-            Posting a new commentator index
-            Get a virtual index for comentator on a text
-            Posting commentary text
-            Commentary links auto generated
-        """
-        index = {
-            "title": "Ploni",
-            "heTitle": "Hebrew Ploni",
-            "titleVariants": ["Ploni"],
-            "categories": ["Commentary"]
-        }
-        response = c.post("/api/index/Ploni", {'json': json.dumps(index)})
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)
-        self.assertNotIn("error", data)
-        self.assertEqual(1, IndexSet({"title": "Ploni"}).count())
+    #"""def test_post_commentary_text(self):
+        #"""
+     #   Tests:
+     #       Posting a new commentator index
+     #       Get a virtual index for comentator on a text
+     #       Posting commentary text
+     #       Commentary links auto generated
+        #"""
+        #index = {
+            #"title": "Ploni",
+            #"heTitle": "Hebrew Ploni",
+            #"titleVariants": ["Ploni"],
+            #"categories": ["Commentary"]
+        #}
+        #response = c.post("/api/index/Ploni", {'json': json.dumps(index)})
+        #self.assertEqual(200, response.status_code)
+        #data = json.loads(response.content)
+        #self.assertNotIn("error", data)
+        #self.assertEqual(1, IndexSet({"title": "Ploni"}).count())
 
-        # Virtual Indexes are available for commentary texts
-        response = c.get("/api/index/Ploni_on_Job")
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)
-        self.assertIn("categories", data)
-        self.assertEqual(["Commentary", "Tanakh", "Ploni"], data["categories"])
+        ## Virtual Indexes are available for commentary texts
+        #response = c.get("/api/index/Ploni_on_Job")
+        #self.assertEqual(200, response.status_code)
+        #data = json.loads(response.content)
+        #self.assertIn("categories", data)
+        #self.assertEqual(["Commentary", "Tanakh", "Ploni"], data["categories"])
 
-        # Post some text
-        text = {
-            "text": ["Comment 1", "Comment 2", "Comment 3"],
-            "versionTitle": "Ploni Edition",
-            "versionSource": "www.sefaria.org",
-            "language": "en",
-        }
-        response = c.post("/api/texts/Ploni_on_Job.2.2", {'json': json.dumps(text)})
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.content)
-        self.assertNotIn("error", data)
-        self.assertEqual(3, LinkSet({"refs": {"$regex": "^Ploni on Job"}}).count())
-    """
+        ## Post some text
+        #text = {
+            #"text": ["Comment 1", "Comment 2", "Comment 3"],
+            #"versionTitle": "Ploni Edition",
+            #"versionSource": "www.sefaria.org",
+            #"language": "en",
+        #}
+        #response = c.post("/api/texts/Ploni_on_Job.2.2", {'json': json.dumps(text)})
+        #self.assertEqual(200, response.status_code)
+        #data = json.loads(response.content)
+        #self.assertNotIn("error", data)
+        #self.assertEqual(3, LinkSet({"refs": {"$regex": "^Ploni on Job"}}).count())
+    #"""
 
     def test_post_to_default_node(self):
         text = {
