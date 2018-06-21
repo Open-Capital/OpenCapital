@@ -1,18 +1,24 @@
 {% extends "base.html" %}
+{% load i18n static %}
+{% get_static_prefix as STATIC_PREFIX %}
 
 {% load sefaria_tags %}
 
 
-{% block title %}Edit Group on Sefaria{% endblock %}
+{% block title %}{% trans "Edit Group on Sefaria" %}{% endblock %}
+
+{% block css %}
+body {
+  overflow: scroll;
+}
+{% endblock %}
 
 {% block content %}
-{% if S2 %}
 <div id="editGroupPageContainer" class="static biReady">
   <div id="editGroupPageContainerInner" class="inner">
     <h1>Loading...</h1>
   </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block js %}
@@ -20,12 +26,13 @@
 <script>
     {% autoescape off %}
     var DJANGO_VARS = {
-        propsJSON: {
+        props: {
       	    initialData: {{ groupData|jsonify }}
         },
         containerId: 'editGroupPageContainerInner',
         reactComponentName: 'EditGroupPage',
-        ga: ga
+        ga: ga,
+        static_url: {{ STATIC_PREFIX }}
     };
     {% endautoescape %}
 

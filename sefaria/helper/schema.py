@@ -365,7 +365,7 @@ def change_char_node_titles(index_title, bad_char, good_char, lang):
 
 
     def callback(node, **kwargs):
-        titles = node.get_titles()
+        titles = node.get_titles_object()
         for each_title in titles:
             if each_title['lang'] == lang and 'primary' in each_title and each_title['primary']:
                 title = each_title['text']
@@ -674,7 +674,7 @@ def cascade(ref_identifier, rewriter=lambda x: x, needs_rewrite=lambda x: True, 
         generic_rewrite(HistorySet(construct_query('old.refs', identifier), sort=[('old.refs', 1)]), attr_name='old', sub_attr_name='refs')
 
 
-def generate_segment_mapping(title, mapping, output_file=None):
+def generate_segment_mapping(title, mapping, output_file=None, mapped_title=lambda x: "Complex {}".format(x)):
     '''
     :param title: title of Index record
     :param mapping: mapping is a dict where each key is a reference in the original simple Index and each value is a reference in the new complex Index
@@ -725,7 +725,7 @@ def generate_segment_mapping(title, mapping, output_file=None):
             refs += [orig_ref]
 
         #segment_value is the value of the mapping that the user inputted
-        segment_value = "Complex {}".format(mapping[orig_ref_str])
+        segment_value = mapped_title(mapping[orig_ref_str])
 
         #now iterate over the refs and create the key/value pairs to put into segment_map
         for each_ref in refs:
@@ -755,7 +755,6 @@ def generate_segment_mapping(title, mapping, output_file=None):
             output_file.write("KEY: {}, VALUE: {}".format(key, segment_map[key])+"\n")
         output_file.close()
     return segment_map
-
 
 
 def migrate_to_complex_structure(title, schema, mappings, validate_mapping=False):
@@ -853,6 +852,7 @@ def migrate_to_complex_structure(title, schema, mappings, validate_mapping=False
     i.set_title(he_title, lang="he")
     i.save()
 
+
 def migrate_versions_of_text(versions, mappings, orig_title, new_title, base_index):
     for i, version in enumerate(versions):
         print version.versionTitle.encode('utf-8')
@@ -899,3 +899,47 @@ def migrate_versions_of_text(versions, mappings, orig_title, new_title, base_ind
             new_tc.text = ref_text
             new_tc.save()
             VersionState(dRef.index.title).refresh()
+
+
+def toc_opml():
+    """Prints a simple representation of the TOC in OPML"""
+    toc  = library.get_toc()
+
+    def opml_node(node):
+        if "category" in node:
+            opml = '<outline text="%s">\n' % node["category"]
+            for node in node["contents"]:
+                opml += "    " + opml_node(node) + "\n"
+            opml += '</outline>'
+        else:
+            opml = '<outline text="%s"></outline>\n' % node["title"]
+        return opml
+
+    opml = """
+            <?xml version="1.0"?>
+            <opml version="2.0">
+              <body>
+              %s
+              </body>
+            </opml>
+            """ % "\n".join([opml_node(node) for node in toc])
+
+    print opml
+
+
+def toc_plaintext():
+    """Prints a simple representation of the TOC in indented plaintext"""
+    toc  = library.get_toc()
+
+    def text_node(node, depth):
+        if "category" in node:
+            text = ("    " * depth) + node["category"] + "\n"
+            for node in node["contents"]:
+                text += text_node(node, depth+1)
+        else:
+            text = ("    " * depth) + node["title"] + "\n"
+        return text
+
+    text = "".join([text_node(node, 0) for node in toc])
+
+    print text

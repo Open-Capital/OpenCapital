@@ -1,11 +1,9 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block titleEnglish %}Create an Account | Sefaria{% endblock %}
-{% block titleHebrew %}Create an Account | Sefaria{% endblock %}
+{% block title %}{% trans "Create an Account" %} | {% trans "Sefaria" %}{% endblock %}
 
-{% block descriptionEnglish %}Create an account on Sefaria to make source sheets, take notes and follow other people.{% endblock %}
-
-{% block descriptionHebrew %}Create an account on Sefaria to make source sheets, take notes and follow other people.{% endblock %}
+{% block description %}{% trans "Create an account on Sefaria to make source sheets, take notes and follow other people." %}{% endblock %}
 
 {% block content %}
 
@@ -15,7 +13,7 @@
           <span class="int-en">Create Your Account</span>
           <span class="int-he">צור חשבון</span>
         </h1>
-        <form id="register-form" action="{% url register %}" method="post" autocomplete="false">
+        <form id="register-form" action="{% url "register" %}" method="post" autocomplete="false">
         {% csrf_token %}
         {{ form.as_p }}
         {% if next %}
@@ -26,7 +24,7 @@
             <span class="int-he">צור חשבון</span>
         </button>
         </form>
-        <a class="registration-links control-elem" href="{% url login %}{% if next %}?next={{ next }}{% endif %}">
+        <a class="registration-links control-elem" href="{% url "login" %}{% if next %}?next={{ next }}{% endif %}">
           <span class="int-en">Already have an account? Log in</span>
           <span class="int-he">יש לך חשבון כבר? התחבר</span>
         </a>
