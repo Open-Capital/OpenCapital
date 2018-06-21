@@ -3,8 +3,6 @@
 
 import sys
 import os
-import django
-django.setup()
 
 path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, path)

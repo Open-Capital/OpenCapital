@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 sheets.py - backend core for Sefaria Source sheets
 
@@ -8,7 +7,6 @@ import regex
 import dateutil.parser
 from datetime import datetime, timedelta
 from bson.son import SON
-from collections import defaultdict
 
 import sefaria.model as model
 import sefaria.model.abstract as abstract
@@ -16,24 +14,15 @@ from sefaria.system.database import db
 from sefaria.model.notification import Notification, NotificationSet
 from sefaria.model.following import FollowersSet
 from sefaria.model.user_profile import UserProfile, annotate_user_list, public_user_data, user_link
-from sefaria.utils.util import strip_tags, string_overlap, titlecase
+from sefaria.utils.util import strip_tags, string_overlap,titlecase
 from sefaria.system.exceptions import InputError
-from sefaria.system.cache import django_cache_decorator
 from history import record_sheet_publication, delete_sheet_publication
 from settings import SEARCH_INDEX_ON_SAVE
 import search
-import sys
-import hashlib
-import urllib
-
-if not hasattr(sys, '_doc_build'):
-	from django.contrib.auth.models import User
-from django.contrib.humanize.templatetags.humanize import naturaltime
-
 
 
 # Simple cache of the last updated time for sheets
-# last_updated = {}
+last_updated = {}
 
 
 def get_sheet(id=None):
@@ -48,39 +37,6 @@ def get_sheet(id=None):
 	s["_id"] = str(s["_id"])
 	return s
 
-def get_sheet_node(sheet_id=None, node_id=None):
-	"""
-	Returns the source sheet with id.
-	"""
-	if sheet_id is None:
-		return {"error": "No sheet id given."}
-	if node_id is None:
-		return {"error": "No node id given."}
-	s = db.sheets.find_one({
-		"id": int(sheet_id),
-		"sources.node": int(node_id)
-	}, {
-		"sources.$": 1,
-		"_id": 0
-	})
-
-	if not s:
-		return {"error": "Couldn't find node with sheet id: %s and node id: %s" % (sheet_id, node_id)}
-	return s["sources"][0]
-
-
-def get_sheet_for_panel(id=None):
-	sheet = get_sheet(id)
-	if "assigner_id" in sheet:
-		asignerData = public_user_data(sheet["assigner_id"])
-		sheet["assignerName"]  = asignerData["name"]
-	if "viaOwner" in sheet:
-		viaOwnerData = public_user_data(sheet["viaOwner"])
-		sheet["viaOwnerName"]  = viaOwnerData["name"]
-	ownerData = public_user_data(sheet["owner"])
-	sheet["ownerName"]  = ownerData["name"]
-	sheet["naturalDateCreated"] = naturaltime(datetime.strptime(sheet["dateCreated"], "%Y-%m-%dT%H:%M:%S.%f"))
-	return sheet
 
 def user_sheets(user_id, sort_by="date", limit=0, skip=0):
 	query = {"owner": int(user_id)}
@@ -147,7 +103,7 @@ def sheet_to_dict(sheet):
 	profile = public_user_data(sheet["owner"])
 	sheet_dict = {
 		"id": sheet["id"],
-		"title": strip_tags(sheet["title"]) if "title" in sheet else "Untitled Sheet",
+		"title": sheet["title"] if "title" in sheet else "Untitled Sheet",
 		"status": sheet["status"],
 		"author": sheet["owner"],
 		"ownerName": profile["name"],
@@ -155,7 +111,6 @@ def sheet_to_dict(sheet):
 		"views": sheet["views"],
 		"modified": dateutil.parser.parse(sheet["dateModified"]).strftime("%m/%d/%Y"),
 		"tags": sheet["tags"] if "tags" in sheet else [],
-		"options": sheet["options"] if "options" in sheet else [],
 	}
 	return sheet_dict
 
@@ -183,13 +138,13 @@ def sheet_tag_counts(query, sort_by="count"):
 		return []
 
 	tags = db.sheets.aggregate([
-			{"$match": query },
-			{"$unwind": "$tags"},
-			{"$group": {"_id": "$tags", "count": {"$sum": 1}}},
-			{"$sort": sort_query },
-			{"$project": { "_id": 0, "tag": "$_id", "count": "$count"}}], cursor={})
-	tags = list(tags)
-	return tags
+		{"$match": query },
+		{"$unwind": "$tags"},
+		{"$group": {"_id": "$tags", "count": {"$sum": 1}}},
+		{"$sort": sort_query },
+		{"$project": { "_id": 0, "tag": "$_id", "count": "$count"}}
+	])
+	return tags["result"]
 
 
 def order_tags_for_user(tag_counts, uid):
@@ -218,23 +173,11 @@ def recent_public_tags(days=14, ntags=14):
 	"""
 	Returns list of tag/counts on public sheets modified in the last 'days'.
 	"""
-	cutoff            = datetime.now() - timedelta(days=days)
-	query             = {"status": "public", "dateModified": { "$gt": cutoff.isoformat() } }
-	unnormalized_tags = sheet_tag_counts(query)[:ntags]
+	cutoff      = datetime.now() - timedelta(days=days)
+	query       = {"status": "public", "dateModified": { "$gt": cutoff.isoformat() } }
+	tags        = sheet_tag_counts(query)[:ntags]
 
-	tags = defaultdict(int)
-	results = []
-
-	for tag in unnormalized_tags:
-		tags[model.Term.normalize(tag["tag"])] += tag["count"]
-
-	for tag in tags.items():
-		if len(tag[0]):
-			results.append({"tag": tag[0], "count": tag[1]})
-
-	results = sorted(results, key=lambda x: -x["count"])
-
-	return results
+	return tags
 
 
 def save_sheet(sheet, user_id, search_override=False):
@@ -291,18 +234,13 @@ def save_sheet(sheet, user_id, search_override=False):
 
 	db.sheets.update({"id": sheet["id"]}, sheet, True, False)
 
-	if "tags" in sheet:
-		update_sheet_tags(sheet["id"], sheet["tags"])
-
 
 	if sheet["status"] == "public" and SEARCH_INDEX_ON_SAVE and not search_override:
 		index_name = search.get_new_and_current_index_names()['current']
 		search.index_sheet(index_name, sheet["id"])
 
-	'''
 	global last_updated
 	last_updated[sheet["id"]] = sheet["dateModified"]
-	'''
 
 	return sheet
 
@@ -336,6 +274,27 @@ def add_source_to_sheet(id, source, note=None):
 		sheet["sources"].append({"outsideText": note, "options": {"indented": "indented-1"}})
 	db.sheets.save(sheet)
 	return {"status": "ok", "id": id, "source": source}
+
+
+def copy_source_to_sheet(to_sheet, from_sheet, source):
+	"""
+	Copy source of from_sheet to to_sheet.
+	"""
+	copy_sheet = db.sheets.find_one({"id": from_sheet})
+	if not copy_sheet:
+		return {"error": "No sheet with id %s." % (from_sheet)}
+	if source >= len(from_sheet["source"]):
+		return {"error": "Sheet %d only has %d sources." % (from_sheet, len(from_sheet["sources"]))}
+	copy_source = copy_sheet["source"][source]
+
+	sheet = db.sheets.find_one({"id": to_sheet})
+	if not sheet:
+		return {"error": "No sheet with id %s." % (to_sheet)}
+	sheet["dateModified"] = datetime.now().isoformat()
+	sheet["sources"].append(copy_source)
+	db.sheets.save(sheet)
+	return {"status": "ok", "id": to_sheet, "ref": copy_source["ref"]}
+
 
 def add_ref_to_sheet(id, ref):
 	"""
@@ -441,80 +400,50 @@ def get_sheets_for_ref(tref, uid=None):
 	oref = model.Ref(tref)
 	# perform initial search with context to catch ranges that include a segment ref
 	regex_list = oref.context_ref().regex(as_list=True)
-	ref_clauses = [{"includedRefs": {"$regex": r}} for r in regex_list]
+	ref_clauses = [{"sources.ref": {"$regex": r}} for r in regex_list]
 	query = {"$or": ref_clauses }
 	if uid:
 		query["owner"] = uid
 	else:
 		query["status"] = "public"
-	sheetsObj = db.sheets.find(query,
-		{"id": 1, "title": 1, "owner": 1, "viaOwner":1, "via":1, "dateCreated": 1, "includedRefs": 1, "views": 1, "tags": 1, "status": 1, "summary":1, "attribution":1, "assigner_id":1, "likes":1, "options":1}).sort([["views", -1]])
-	sheets = list((s for s in sheetsObj))
-	user_ids = list(set([s["owner"] for s in sheets]))
-	django_user_profiles = User.objects.filter(id__in=user_ids).values('email','first_name','last_name','id')
-	user_profiles = {item['id']: item for item in django_user_profiles}
-	mongo_user_profiles = list(db.profiles.find({"id": {"$in": user_ids}},{"id":1,"slug":1}))
-	mongo_user_profiles = {item['id']: item for item in mongo_user_profiles}
-	for profile in user_profiles:
-		user_profiles[profile]["slug"] = mongo_user_profiles[profile]["slug"]
-
-	ref_re = "("+'|'.join(regex_list)+")"
+	sheets = db.sheets.find(query,
+		{"id": 1, "title": 1, "owner": 1, "sources.ref": 1, "views": 1, "tags": 1, "status": 1}).sort([["views", -1]])
+	
 	results = []
 	for sheet in sheets:
-		potential_matches = [r for r in sheet["includedRefs"] if r.startswith(oref.index.title)]
-		matched_refs = [r for r in potential_matches if regex.match(ref_re, r)]
-
+		matched_refs = []
+		for source in sheet.get("sources", []):
+			if "ref" in source:
+				matched_refs.append(source["ref"])
 		for match in matched_refs:
 			try:
 				match = model.Ref(match)
+				if not oref.overlaps(match):
+					continue
 			except InputError:
 				continue
-			ownerData = user_profiles.get(sheet["owner"], {'first_name': u'Ploni', 'last_name': u'Almoni', 'email': u'test@sefaria.org', 'slug': 'Ploni-Almoni', 'id': None})
-
-			default_image = "https://www.sefaria.org/static/img/profile-default.png"
-			gravatar_base = "https://www.gravatar.com/avatar/" + hashlib.md5(ownerData["email"].lower()).hexdigest() + "?"
-			gravatar_url_small = gravatar_base + urllib.urlencode({'d': default_image, 's': str(80)})
-
-			if "assigner_id" in sheet:
-				asignerData = public_user_data(sheet["assigner_id"])
-				sheet["assignerName"] = asignerData["name"]
-				sheet["assignerProfileUrl"] = asignerData["profileUrl"]
-			if "viaOwner" in sheet:
-				viaOwnerData = public_user_data(sheet["viaOwner"])
-				sheet["viaOwnerName"] = viaOwnerData["name"]
-				sheet["viaOwnerProfileUrl"] = viaOwnerData["profileUrl"]
-
+			ownerData = public_user_data(sheet["owner"])
 			sheet_data = {
 				"owner":           sheet["owner"],
 				"_id":             str(sheet["_id"]),
-				"id":              str(sheet["id"]),
 				"anchorRef":       match.normal(),
 				"anchorVerse":     match.sections[-1] if len(match.sections) else 1,
 				"public":          sheet["status"] == "public",
+				"text":            "<a class='sheetLink' href='/sheets/%d'>%s</a>" % (sheet["id"], strip_tags(sheet["title"])), # legacy, used in S1
 				"title":           strip_tags(sheet["title"]),
 				"sheetUrl":        "/sheets/" + str(sheet["id"]),
-				"options": 		   sheet["options"],
-				"naturalDateCreated": naturaltime(datetime.strptime(sheet["dateCreated"], "%Y-%m-%dT%H:%M:%S.%f")),
-				"ownerName":       ownerData["first_name"]+" "+ownerData["last_name"],
-				"via":			   sheet.get("via", None),
-				"viaOwnerName":	   sheet.get("viaOwnerName", None),
-				"assignerName":	   sheet.get("assignerName", None),
-				"viaOwnerProfileUrl":	   sheet.get("viaOwnerProfileUrl", None),
-				"assignerProfileUrl":	   sheet.get("assignerProfileUrl", None),
-				"ownerProfileUrl": "/profile/" + ownerData["slug"],
-				"ownerImageUrl":   gravatar_url_small,
+				"ownerName":       ownerData["name"],
+				"ownerProfileUrl": ownerData["profileUrl"],
+				"ownerImageUrl":   ownerData["imageUrl"],
 				"status":          sheet["status"],
 				"views":           sheet["views"],
 				"tags":            sheet.get("tags", []),
-				"likes":           sheet.get("likes", []),
-				"summary":         sheet.get("summary", None),
-				"attribution":     sheet.get("attribution", None),
+				"commentator":     user_link(sheet["owner"]), # legacy, used in S1
 				"category":        "Sheets", # ditto
 				"type":            "sheet", # ditto
 			}
 
 			results.append(sheet_data)
-
 
 	return results
 
@@ -534,45 +463,42 @@ def get_last_updated_time(sheet_id):
 	"""
 	Returns a timestamp of the last modified date for sheet_id.
 	"""
-	'''
 	if sheet_id in last_updated:
 		return last_updated[sheet_id]
-	'''
 
 	sheet = db.sheets.find_one({"id": sheet_id}, {"dateModified": 1})
 
 	if not sheet:
 		return None
 
-	'''
 	last_updated[sheet_id] = sheet["dateModified"]
-	'''
 	return sheet["dateModified"]
 
 
-@django_cache_decorator(time=(60 * 60))
-def public_tag_list(sort_by="alpha"):
+def make_tag_list(sort_by="alpha"):
 	"""
 	Returns a list of all public tags, sorted either alphabetically ("alpha") or by popularity ("count")
 	"""
-	tags = defaultdict(int)
+	tags = {}
 	results = []
+	projection = {"tags": 1}
 
-	unnormalized_tags = sheet_tag_counts({"status": "public"})
-	lang = "he" if sort_by == "alpha-hebrew" else "en"
-	for tag in unnormalized_tags:
-		tags[model.Term.normalize(tag["tag"], lang)] += tag["count"]
+	sheet_list = db.sheets.find({"status": "public"}, projection)
+	for sheet in sheet_list:
+		sheet_tags = sheet.get("tags", [])
+		for tag in sheet_tags:
+			if tag not in tags:
+				tags[tag] = {"tag": tag, "count": 0}
+			tags[tag]["count"] += 1
 
-	for tag in tags.items():
-		if len(tag[0]):
-			results.append({"tag": tag[0], "count": tag[1]})
+	for tag in tags.values():
+		results.append(tag)
 
 	sort_keys =  {
 		"alpha": lambda x: x["tag"],
 		"count": lambda x: -x["count"],
-		"alpha-hebrew": lambda x: x["tag"] if len(x["tag"]) and x["tag"][0] in u"אבגדהוזחטיכלמנסעפצקרשת0123456789" else u"ת" + x["tag"],
 	}
-	results = sorted(results, key=sort_keys[sort_by])
+	results  = sorted(results, key=sort_keys[sort_by])
 
 	return results
 
@@ -581,9 +507,7 @@ def get_sheets_by_tag(tag, public=True, uid=None, group=None):
 	"""
 	Returns all sheets tagged with 'tag'
 	"""
-	term = model.Term().load_by_title(tag)
-	tags = term.get_titles() if term else [tag]
-	query = {"tags": {"$in": tags} } if tag else {"tags": {"$exists": 0}}
+	query = {"tags": tag } if tag else {"tags": {"$exists": 0}}
 
 	if uid:
 		query["owner"] = uid
@@ -644,7 +568,7 @@ def broadcast_sheet_publication(publisher_id, sheet_id):
 		n.save()
 
 
-def make_sheet_from_text(text, sources=None, uid=1, generatedBy=None, title=None, segment_level=False):
+def make_sheet_from_text(text, sources=None, uid=1, generatedBy=None, title=None):
 	"""
 	Creates a source sheet owned by 'uid' that includes all of 'text'.
 	'sources' is a list of strings naming commentators or texts to include.
@@ -665,11 +589,7 @@ def make_sheet_from_text(text, sources=None, uid=1, generatedBy=None, title=None
 		refs = []
 		if leaf.first_section_ref() != leaf.last_section_ref():
 			leaf_spanning_ref = leaf.first_section_ref().to(leaf.last_section_ref())
-			assert isinstance(leaf_spanning_ref, model.Ref)
-			if segment_level:
-				refs += [ref for ref in leaf_spanning_ref.all_segment_refs() if oref.contains(ref)]
-			else:  # section level
-				refs += [ref for ref in leaf_spanning_ref.split_spanning_ref() if oref.contains(ref)]
+			refs += [ref for ref in leaf_spanning_ref.split_spanning_ref() if oref.contains(ref)]
 		else:
 			refs.append(leaf.ref())
 
@@ -691,13 +611,13 @@ class Sheet(abstract.AbstractMongoRecord):
 		"sources",
 		"status",
 		"options",
+		"generatedBy",
 		"dateCreated",
 		"dateModified",
 		"owner",
 		"id"
 	]
 	optional_attrs = [
-		"generatedBy",  # this had been required, but it's not always there.
 		"included_refs",
 		"views",
 		"nextNode",
@@ -712,8 +632,7 @@ class Sheet(abstract.AbstractMongoRecord):
 		"assigner_id",
 		"likes",
 		"group",
-		"generatedBy",
-		"summary" # double check this one
+		"generatedBy"
 	]
 
 	def regenerate_contained_refs(self):
@@ -723,25 +642,3 @@ class Sheet(abstract.AbstractMongoRecord):
 	def get_contained_refs(self):
 		return [model.Ref(r) for r in self.included_refs]
 
-	def is_hebrew(self):
-		"""Returns True if this sheet appears to be in Hebrew according to its title"""
-		from sefaria.utils.hebrew import is_hebrew
-		import regex
-		title = strip_tags(self.title)
-		# Consider a sheet Hebrew if its title contains Hebrew character but no English characters
-		return is_hebrew(title) and not regex.search(u"[a-z|A-Z]", title)
-
-
-class SheetSet(abstract.AbstractMongoSet):
-	recordClass = Sheet
-
-
-def change_tag(old_tag, new_tag_or_list):
-	# new_tag_or_list can be either a string or a list of strings
-	# if a list of strings, then old_tag is replaced with all of the tags in the list
-
-	new_tag_list = [new_tag_or_list] if isinstance(new_tag_or_list, basestring) else new_tag_or_list
-
-	for sheet in SheetSet({"tags": old_tag}):
-		sheet.tags = [tag for tag in sheet.tags if tag != old_tag] + new_tag_list
-		sheet.save()

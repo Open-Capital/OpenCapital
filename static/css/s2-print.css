@@ -1,7 +1,7 @@
 body {
   overflow: scroll;
 }
-.header, .leftButtons, .rightButtons, .loadingMessage, .fa, .linkCountDot, details {
+.header, .leftButtons, .rightButtons, .loadingMessage, .fa, .linkCountDot {
   display: none;
 }
 #s2 {

@@ -1,5 +1,3 @@
-# encoding=utf-8
-
 __author__ = 'stevenkaplan'
 from sefaria.helper.schema import *
 torah_titles = library.get_indexes_in_category("Torah")

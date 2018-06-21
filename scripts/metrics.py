@@ -2,8 +2,6 @@
 import sys
 import os
 import datetime
-import django
-django.setup()
 
 from sefaria.system.database import db
 from sefaria.model.text import VersionSet

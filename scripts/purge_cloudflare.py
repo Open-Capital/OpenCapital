@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import django
-django.setup()
 import argparse
 from sefaria.system.cloudflare import SefariaCloudflareManager
 from sefaria.utils.util import get_directory_content

@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 
-{% load i18n %} 
 {% load sefaria_tags %}
 
-{% block title %}{{ name }} | {% trans "Sefaria" %}{% endblock %}
+{% block titleEnglish %}{{ primary_name.en }} | Sefaria{% endblock %}
 
-{% block description %}{{ bio }} | {% trans "Sefaria" %}{% endblock %}
+{% block titleHebrew %}{{ primary_name.he }} | Sefaria{% endblock %}
 
+{% block descriptionEnglish %}{{ enBio }}{% endblock %}
+
+{% block descriptionHebrew %}{{ heBio }}{% endblock %}
 
 {% block head %}
 <script src="https://d3js.org/d3.v3.min.js"></script>
@@ -35,10 +37,10 @@
             "item": {
               {% if post_talmudic %}
                 "@id": "/people",
-                "name": {% trans "Authors" %}
+                "name": "Authors"
               {% else %}
                 "@id": "/people/talmud",
-                "name": {% trans "People in the Talmud" %}
+                "name": "People in the Talmud"
               {% endif %}
             }
           },
@@ -47,7 +49,7 @@
             "position": 2,
             "item": {
               "@id": "/person/{{ key }}",
-              "name": {% if request.interfaceLang == "english" %} {{ primary_name.en }} {% else %}{{ primary_name.he }} {% endif %}
+              "name": "{{ primary_name.en }}"
             }
           }]
         }
@@ -161,13 +163,6 @@
             var svg = d3.select("#place-map").append("svg")
                 .attr("width", width)
                 .attr("height", height);
-
-            var placesLived = "";
-            for (index = 0; index < places.features.length; ++index) {
-                placesLived = placesLived + (places.features[index].id)+", ";
-            }
-            placesLived = placesLived.slice(0, -2);
-            svg.append("svg:desc").text("Map of "+placesLived);
 
         //Unit projection, for getting bounding box of our data
         var projection = d3.geo.mercator()

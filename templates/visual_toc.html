@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% load sefaria_tags static %}
+{% load sefaria_tags %}
 
 {% block title %}Visualizing the Sefaria Table of Contents{% if lang %} ({{ lang }}){% endif %}{% endblock %}
-{% block ogimage %}<meta property="og:image" content="{% static 'img/sunburst.png' %}"/>{% endblock %}
+{% block ogimage %}<meta property="og:image" content="/static/img/sunburst.png"/>{% endblock %}
 {% block head %}
     {% if not OFFLINE %}
     <script src="https://use.typekit.net/aeg8div.js"></script>
@@ -29,6 +29,7 @@
   }
   #visualTocPage {
     margin: 20px auto;
+    max-width: 1000px;
     text-align: center;
   }
   body.hebrew #visualTocPage {
@@ -54,10 +55,10 @@
     stroke-width: 1.5px;
   }
   .node {
-    font-size: 15px;
+    font-size: 16px;
   }
   .hebrew .node {
-    font-size: 17px;
+    font-size: 18px;
   }
   .link {
     fill: none;
@@ -82,7 +83,7 @@
     var makeD3Toc = function() {
         var d3Toc = {
             name: "Sefaria",
-            children: Sefaria.toc.map(makeD3TreeNode)
+            children: sjs.toc.map(makeD3TreeNode)
         }
         return d3Toc;
     };
@@ -106,8 +107,8 @@
     };
 
     var makeDendogram = function(root) {
-      var width = 1000,
-          height = 10000;
+      var width = 800,
+          height = 6000;
 
       var cluster = d3.layout.cluster()
           .size([height, width - 160]);
@@ -153,7 +154,7 @@
 
 
     var makeRadialReingoldTilfordTree = function(root) {
-      var diameter = 1000;
+      var diameter = 800;
 
       var svg = d3.select("#visualTocPage").append("svg")
           .attr("width", diameter)

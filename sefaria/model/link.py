@@ -33,8 +33,6 @@ class Link(abst.AbstractMongoRecord):
         "generated_by",     # string in ("add_commentary_links", "add_links_from_text", "mishnah_map")
         "source_text_oid",  # oid of text from which link was generated
         "is_first_comment",  # set this flag to denote its the first comment link between the two texts in the link
-        "first_comment_indexes", # Used when is_first_comment is True. List of the two indexes of the refs.
-        "first_comment_section_ref", # Used when is_first_comment is True. First comment section ref.
         "inline_reference"  # dict with keys "data-commentator" and "data-order" to match an inline reference (itag)
     ]
 
@@ -211,7 +209,7 @@ class LinkSet(abst.AbstractMongoSet):
         orig_ref = text.Ref(dependant_text)
         base_text_ref = text.Ref(base_text)
         ls = cls(
-            {'$and': [orig_ref.ref_regex_query(), base_text_ref.ref_regex_query()],
+            {'$and': [{'refs': {'$regex': orig_ref.regex()}}, {'refs': {'$regex': base_text_ref.regex()}}],
              "generated_by": {"$ne": "add_links_from_text"}}
         )
         refs_from = ls.refs_from(base_text_ref, as_link=True)
@@ -245,10 +243,7 @@ class LinkSet(abst.AbstractMongoSet):
 
 def process_index_title_change_in_links(indx, **kwargs):
     print "Cascading Links {} to {}".format(kwargs['old'], kwargs['new'])
-
-    # ensure that the regex library we're using here is the same regex library being used in `Ref.regex`
-    from text import re as reg_reg
-    patterns = [pattern.replace(reg_reg.escape(indx.title), reg_reg.escape(kwargs["old"]))
+    patterns = [pattern.replace(re.escape(indx.title), re.escape(kwargs["old"]))
                 for pattern in text.Ref(indx.title).regex(as_list=True)]
     queries = [{'refs': {'$regex': pattern}} for pattern in patterns]
     links = LinkSet({"$or": queries})

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import django
-django.setup()
 from sefaria.model import *
 from sefaria.clean import *
 
@@ -20,3 +18,5 @@ if __name__ == '__main__':
     print args
 
     broken_link_res = broken_links(args.ref, args.auto_links, args.manual_links, args.delete_links, args.check_text_exists)
+    for b_link in broken_link_res:
+        print b_link

@@ -1,24 +1,34 @@
 {% extends "base.html" %}
-{% load i18n cache humanize sefaria_tags %}
-{% load i18n %}
 
-{% block title %}{% trans "Sefaria Metrics" %}{% endblock %}
+{% load sefaria_tags %}
+{% load humanize %}
+{% load cache %}
 
-{% block description %}{% trans "See graphs charting Sefaria's progress since 2013 across metrics including word counts, number of links and number of source sheets." %}{% endblock %}
+{% block titleEnglish %}Sefaria Metrics{% endblock %}
+{% block titleHebrew %}Sefaria Metrics{% endblock %}
+
+{% block descriptionEnglish %}See graphs charting Sefaria's progress since 2013 across metrics including word counts, number of links and number of source sheets.{% endblock %}
+
+{% block descriptionHebrew %}See graphs charting Sefaria's progress since 2013 across metrics including word counts, number of links and number of source sheets.{% endblock %}
+
 
 {% block content %}
 
-<div id="metricsPage" class="biReady container static">
+{% if S2 %}
+<div id="metricsPage" class="static">
 	<div class="inner">
-        <h1>
-            <span class="int-en">Metrics</span>
-            <span class="int-he">מדדים</span>
-        </h1>
+		<h1>Metrics</h1>
 		<div id="metricsBox">
-			{% trans "Loading..." %}
+			Loading...
 		</div>
 	</div>
 </div>
+{% else %}
+<div id="metricsContent">
+	<h1>Metrics</h1>
+	<div id="metricsBox"></div>
+</div>
+{% endif %}
 
 {% endblock %}
 
@@ -32,23 +42,23 @@
 	}
 
 	var titles = {
-			"totalWords": "{% trans "Total Words in Library" %}",
-			"heWords": "{% trans "Words in Hebrew & Aramaic" %}",
-			"transWords": "{% trans "Words in Translation" %}",
-			"sctWords": "{% trans "Words of Original Translation created by Sefaria Volunteers" %}",
-			"contributors": "{% trans "Number of Public Contributors" %}",
-			"links": "{% trans "Number of Intertextual Links" %}",
-			"sheets": "{% trans "Number of Source Sheets" %}"
+			"totalWords": "Total Words in Library",
+			"heWords": "Words in Hebrew & Aramaic",
+			"transWords": "Words in Translation",
+			"sctWords": "Words of Original Translation created by Sefaria Volunteers",
+			"contributors": "Number of Public Contributors",
+			"links": "Number of Intertextual Links",
+			"sheets": "Number of Source Sheets"
 	};
 
 	var types = {
-			"totalWords": "{% trans "Words" %}",
-			"heWords": "{% trans "Words" %}",
-			"transWords": "{% trans "Words" %}",
-			"sctWords": "{% trans "Words" %}",
-			"contributors": "{% trans "Contributors" %}",
-			"links": "{% trans "Links" %}",
-			"sheets": "{% trans "Source Sheets" %}"
+			"totalWords": "Words",
+			"heWords": "Words",
+			"transWords": "Words",
+			"sctWords": "Words",
+			"contributors": "Contributors",
+			"links": "Links",
+			"sheets": "Source Sheets"
 	};
 
 	var labels = [];

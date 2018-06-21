@@ -9,7 +9,7 @@ var http           = require('http'),
     settings       = require('./local_settings.json'),
     React          = require('react'),
     ReactDOMServer = require('react-dom/server'),
-    SefariaReact   = require('../static/js/ReaderApp.jsx'),
+    SefariaReact   = require('../static/js/s2.jsx'),
     ReaderApp      = React.createFactory(SefariaReact.ReaderApp);
 
 var server = express();
@@ -38,7 +38,6 @@ var renderReaderApp = function(props, data, timer) {
 
   var html  = ReactDOMServer.renderToString(ReaderApp(props));
   log("Time to render: %dms", timer.elapsed());
-  console.log("%s %dms", data.initialPath,  timer.elapsed());
 
   return html;
 };
@@ -52,13 +51,7 @@ server.post('/ReaderApp/:cachekey', function(req, res) {
   // var cacheKey = req.params.cachekey
   log(props.initialRefs || props.initialMenu);
   log("Time to props: %dms", timer.elapsed());
-  var options = {
-    url: settings.DJANGO_HOST + "/data.js",
-    headers: {
-      "User-Agent": "sefaria-node"
-    }
-  };
-  request(options, function(error, response, body) {
+  request(settings.DJANGO_HOST + "/data.js", function(error, response, body) {
     if (!error && response.statusCode == 200) {
       log("Time to get data.js: %dms", timer.elapsed());
       (0, eval)(body); // to understand why this is necessary, see: https://stackoverflow.com/questions/19357978/indirect-eval-call-in-strict-mode
@@ -67,7 +60,7 @@ server.post('/ReaderApp/:cachekey', function(req, res) {
       res.end(html);
       log("Time to complete: %dms", timer.elapsed());
     } else {
-      console.error("ERROR: %s %s", response.statusCode, error);
+      log(error);
       res.end("There was an error accessing /data.js.");
     }
   });

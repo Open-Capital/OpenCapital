@@ -12,9 +12,6 @@ import re
 import regex
 import math
 
-import logging
-logger = logging.getLogger(__name__)
-
 
 ### Change to all caps for constants
 GERESH = u"\u05F3"
@@ -413,10 +410,8 @@ def strip_nikkud(rawString):
 
 
 #todo: rewrite to handle edge case of hebrew words in english texts, and latin characters in Hebrew text
-def is_hebrew(s, heb_only=False):
-	if not heb_only and regex.search(u"\p{Hebrew}", s):
-		return True
-	elif heb_only and regex.search(u"\p{Hebrew}", s) and not regex.search(u"[a-zA-Z]", s):
+def is_hebrew(s):
+	if regex.search(u"\p{Hebrew}", s):
 		return True
 	return False
 
@@ -486,23 +481,32 @@ def hebrew_term(s):
 	if is_hebrew(s):
 		return s
 
-	term = library.get_simple_term_mapping().get(s)
-	if term:
-		return term["he"]
-	else:
-		try:
-			# If s is a text title, look for a stored Hebrew title
-			i = library.get_index(s)
-			return i.get_title("he")
-		except BookNameError:
-			return ''
+	# If s is a text title, look for a stored Hebrew title
+	try:
+		i = library.get_index(s)
+		return i.get_title("he")
+	except BookNameError:
+		term = Term().load({'name': s})
+		if term:
+			return term.get_primary_title('he')
+	return ''
+
+
+def get_simple_term_mapping():
+	from sefaria.model import TermSet, Term
+	hebrew_mapping = {}
+	terms = TermSet()
+	for term in terms:
+		hebrew_mapping[term.name] = {"en": term.get_primary_title("en"), "he": term.get_primary_title("he")}
+	return hebrew_mapping
+
 
 
 def hebrew_parasha_name(value):
 	"""
 	Returns a Hebrew ref for the english ref passed in.
 	"""
-	from sefaria.model import Term, library
+	from sefaria.model import Term
 	if not value:
 		return ""
 	if "-" in value:
@@ -513,8 +517,9 @@ def hebrew_parasha_name(value):
 			return ("-").join(map(hebrew_parasha_name, names))
 	else:
 		try:
-			parasha = library.get_simple_term_mapping().get(value)["he"]
-		except Exception as e:
-			logger.error(e.message)
-			parasha = value
+			term    = Term().load({"name": value, "scheme": "Parasha"})
+			parasha = term.get_titles(lang="he")[0]
+		except Exception, e:
+			print e
+			parasha   = value
 		return parasha

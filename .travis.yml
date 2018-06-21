@@ -8,7 +8,7 @@ cache: pip
 
 services:
   - mongodb
-  - redis-server
+
 
 addons:
   sauce_connect:
@@ -38,12 +38,6 @@ before_script:
   - mkdir log
   - chmod 777 log
 
-  # Install mongo 2.6.6 (default is too old) - as per https://docs.mongodb.com/v2.6/tutorial/install-mongodb-on-ubuntu/
-  # - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-  # - echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
-  # - sudo apt-get update
-  # - sudo apt-get install -y mongodb-org=2.6.6 mongodb-org-server=2.6.6 mongodb-org-shell=2.6.6 mongodb-org-mongos=2.6.6 mongodb-org-tools=2.6.6
-
   # Download and restore the Sefaria database
   - wget -nv $MONGO_DUMP_URL
   - tar -xzvf $MONGO_DUMP_FILENAME
@@ -56,20 +50,12 @@ before_script:
   # Get rid of the conftest that forces a copy of the datastore to a test db
   - rm ./sefaria/conftest.py
 
-  # Copy LC_MESSAGES to Django locale dirs -- for unknown reasons this file is missing on Travis.
-  # When Django admin runs `syncdb` it tries to activate the english language from within
-  # the Django core files. This is likely related to Travis using virutalenv, may be fixed by upgrading Django.
-  - cp -R ./locale/en/LC_MESSAGES/ /home/travis/virtualenv/python2.7.14/lib/python2.7/site-packages/django/conf/locale/en
-
   # Create the user db
-  - python manage.py migrate --noinput
-  - python manage.py createsuperuser --email $SEFARIA_SUPERUSER  --username  $SEFARIA_SUPERUSER --noinput
-
-  # Rebuild TOC - TEMP to pass tests involving TOC changes
-  - ./run rebuild_toc.py 
+  - python manage.py syncdb --noinput
+  - python manage.py createsuperuser --email $SEFARIA_SUPERUSER  --noinput
 
   # run the django server, redirecting output to log files
-  - python manage.py runserver --insecure # 2> server.error.log > server.log &
+  - python manage.py runserver --insecure 2> server.error.log > server.log &
   - python scripts/setup_travis_users.py
 
   # Wait for server to come up

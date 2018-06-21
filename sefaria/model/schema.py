@@ -48,8 +48,6 @@ class TitleGroup(object):
         for lang in self.langs:
             if not self.primary_title(lang):
                 raise InputError("Title Group must have a {} primary title".format(lang))
-        if len(self.all_titles()) > len(list(set(self.all_titles()))):
-            raise InputError("There are duplicate titles in this object's title group")
         for title in self.titles:
             if not set(title.keys()) == set(self.required_attrs) and not set(title.keys()) <= set(self.required_attrs+self.optional_attrs):
                 raise InputError("Title Group titles must only contain the following keys: {}".format(self.required_attrs+self.optional_attrs))
@@ -57,6 +55,8 @@ class TitleGroup(object):
             raise InputError("Primary English title may not contain hyphens.")
         if not all(ord(c) < 128 for c in self.primary_title("en")):
             raise InputError("Primary English title may not contain non-ascii characters")
+
+
 
     def load(self, serial=None):
         if serial:
@@ -141,67 +141,7 @@ class TitleGroup(object):
         return self
 
 
-class AbstractTitledObject(object):
-
-    def add_primary_titles(self, en_title, he_title):
-        self.add_title(en_title, 'en', primary=True)
-        self.add_title(he_title, 'he', primary=True)
-
-    def add_title(self, text, lang, primary=False, replace_primary=False):
-        """
-        :param text: Text of the title
-        :param language:  Language code of the title (e.g. "en" or "he")
-        :param primary: Is this a primary title?
-        :param replace_primary: must be true to replace an existing primary title
-        :return: the object
-        """
-        return self.title_group.add_title(text, lang, primary, replace_primary)
-
-    def remove_title(self, text, lang):
-        return self.title_group.remove_title(text, lang)
-
-    def get_titles_object(self):
-        return getattr(self.title_group, "titles", None)
-
-    def get_titles(self, lang=None):
-        return self.title_group.all_titles(lang)
-
-    def get_primary_title(self, lang='en'):
-        return self.title_group.primary_title(lang)
-
-    def has_title(self, title, lang="en"):
-        return title in self.get_titles(lang)
-
-
-class AbstractTitledOrTermedObject(AbstractTitledObject):
-    def _init_title_defaults(self):
-        # To be called at initialization time
-        self.title_group = TitleGroup()
-
-    def _load_title_group(self):
-        if getattr(self, "titles", None):
-            self.title_group.load(serial=self.titles)
-            del self.__dict__["titles"]
-
-        self._process_terms()
-
-    def _process_terms(self):
-        # To be called after raw data load
-        from sefaria.model import library
-
-        if self.sharedTitle:
-            term = library.get_term(self.sharedTitle)
-            try:
-                self.title_group = term.title_group
-            except AttributeError:
-                raise IndexError(u"Failed to load term named {}.".format(self.sharedTitle))
-
-    def add_shared_term(self, term):
-        self.sharedTitle = term
-        self._process_terms()
-
-
-class Term(abst.AbstractMongoRecord, AbstractTitledObject):
+class Term(abst.AbstractMongoRecord):
     """
     A Term is a shared title node.  It can be referenced and used by many different Index nodes.
     Examples:  Noah, Perek HaChovel, Even HaEzer
@@ -211,7 +151,6 @@ class Term(abst.AbstractMongoRecord, AbstractTitledObject):
     track_pkeys = True
     pkeys = ["name"]
     title_group = None
-    history_noun = "term"
 
     required_attrs = [
         "name",
@@ -223,36 +162,26 @@ class Term(abst.AbstractMongoRecord, AbstractTitledObject):
         "ref"
     ]
 
-    def load_by_title(self, title):
-        query = {'titles.text': title}
-        return self.load(query=query)
-
     def _set_derived_attributes(self):
         self.set_titles(getattr(self, "titles", None))
 
     def set_titles(self, titles):
         self.title_group = TitleGroup(titles)
 
+    def _validate(self):
+        super(Term, self)._validate()
+        if self.name != self.get_primary_title():
+            raise InputError("Term name does not match primary title")
+        self.title_group.validate()
+
     def _normalize(self):
         self.titles = self.title_group.titles
 
-    def _validate(self):
-        super(Term, self)._validate()
-        #do not allow duplicates:
-        for title in self.get_titles():
-            other_term = Term().load_by_title(title)
-            if other_term and not self.same_record(other_term):
-                raise InputError(u"A Term with the title {} in it already exists".format(title))
-        self.title_group.validate()
-        if self.name != self.get_primary_title():
-            raise InputError(u"Term name {} does not match primary title {}".format(self.name, self.get_primary_title()))
+    def get_titles(self, lang=None):
+        return self.title_group.all_titles(lang)
 
-    @staticmethod
-    def normalize(term, lang="en"):
-        """ Returns the primary title for of 'term' if it exists in the terms collection
-        otherwise return 'term' unchanged """
-        t = Term().load_by_title(term)
-        return t.get_primary_title(lang=lang) if t else term
+    def get_primary_title(self, lang='en'):
+        return self.title_group.primary_title(lang)
 
 
 class TermSet(abst.AbstractMongoSet):
@@ -362,26 +291,6 @@ class TreeNode(object):
         self.children.append(node)
         node.parent = self
         return self
-
-    def replace(self, node):
-        """
-        Replace self with `node`
-        :param node:
-        :return:
-        """
-        parent = self.parent
-        assert parent
-
-        parent.children = [c if c != self else node for c in parent.children]
-
-        node.parent = parent
-        self.parent = None
-
-    def detach(self):
-        parent = self.parent
-        assert parent
-        parent.children = [c for c in parent.children if c != self]
-        self.parent = None
 
     def append_to(self, node):
         """
@@ -545,31 +454,7 @@ class TreeNode(object):
             new_node = callback(new_node)
         return new_node
 
-    def all_children(self):
-        return self.traverse_to_list(lambda n, i: [n])[1:]
-
-    def get_leaf_nodes_to_depth(self, max_depth = None):
-        """
-        :param max_depth: How many levels below this one to traverse.
-        1 returns only this node's children, 0 returns only this node.
-        """
-        assert max_depth is not None
-        leaves = []
-
-        if not self.children:
-            return [self]
-        elif max_depth > 0:
-            for node in self.children:
-                if not node.children:
-                    leaves += [node]
-                else:
-                    leaves += node.get_leaf_nodes_to_depth(max_depth=max_depth - 1)
-        return leaves
-
     def get_leaf_nodes(self):
-        """
-        :return:
-        """
         if not self._leaf_nodes:
             if not self.children:
                 self._leaf_nodes = [self]
@@ -581,16 +466,8 @@ class TreeNode(object):
                         self._leaf_nodes += node.get_leaf_nodes()
         return self._leaf_nodes
 
-    def get_child_order(self, child):
-        """
-        Intention is to call this on the root node of a schema, in order to get the order of a child node.
-        :param child: TreeNode
-        :return: Integer
-        """
-        return self.all_children().index(child) + 1
 
-
-class TitledTreeNode(TreeNode, AbstractTitledOrTermedObject):
+class TitledTreeNode(TreeNode):
     """
     A tree node that has a collection of titles - as contained in a TitleGroup instance.
     In this class, node titles, terms, 'default', and combined titles are handled.
@@ -600,7 +477,12 @@ class TitledTreeNode(TreeNode, AbstractTitledOrTermedObject):
 
     def __init__(self, serial=None, **kwargs):
         super(TitledTreeNode, self).__init__(serial, **kwargs)
-        self._load_title_group()
+
+        if getattr(self, "titles", None):
+            self.title_group.load(serial=self.titles)
+            del self.__dict__["titles"]
+
+        self._process_terms()
 
     def _init_defaults(self):
         super(TitledTreeNode, self)._init_defaults()
@@ -609,8 +491,19 @@ class TitledTreeNode(TreeNode, AbstractTitledOrTermedObject):
         self._full_title = {}
         self._full_titles = {}
 
-        self._init_title_defaults()
+        self._init_titles()
         self.sharedTitle = None
+
+    def _init_titles(self):
+        self.title_group = TitleGroup()
+
+    def _process_terms(self):
+        if self.sharedTitle:
+            try:
+                term = Term().load({"name": self.sharedTitle})
+                self.title_group = term.title_group
+            except Exception, e:
+                raise IndexSchemaError("Failed to load term named {}. {}".format(self.sharedTitle, e))
 
     def all_tree_titles(self, lang="en"):
         """
@@ -633,7 +526,7 @@ class TitledTreeNode(TreeNode, AbstractTitledOrTermedObject):
         title_dict = {}
         thisnode = self
 
-        this_node_titles = [title["text"] for title in self.get_titles_object() if title["lang"] == lang and title.get("presentation") != "alone"]
+        this_node_titles = [title["text"] for title in self.get_titles() if title["lang"] == lang and title.get("presentation") != "alone"]
         if (not len(this_node_titles)) and (not self.is_default()):
             error = u'No "{}" title found for schema node: "{}"'.format(lang, self.key)
             error += u', child of "{}"'.format(self.parent.full_title("en")) if self.parent else ""
@@ -643,7 +536,7 @@ class TitledTreeNode(TreeNode, AbstractTitledOrTermedObject):
         else:
             node_title_list = this_node_titles
 
-        alone_node_titles = [title["text"] for title in self.get_titles_object() if title["lang"] == lang and title.get("presentation") == "alone" or title.get("presentation") == "both"]
+        alone_node_titles = [title["text"] for title in self.get_titles() if title["lang"] == lang and title.get("presentation") == "alone" or title.get("presentation") == "both"]
         node_title_list += alone_node_titles
 
         for child in self.children:
@@ -718,22 +611,26 @@ class TitledTreeNode(TreeNode, AbstractTitledOrTermedObject):
                     return True
         return False
 
+    def get_titles(self):
+        return getattr(self.title_group, "titles", None)
+
     def primary_title(self, lang="en"):
-        # Retained for backwards compatability.  Could be factored out.
         """
         Return the primary title for this node in the language specified
         :param lang: "en" or "he"
         :return: The primary title string or None
         """
-        return self.get_primary_title(lang)
+        return self.title_group.primary_title(lang)
 
     def all_node_titles(self, lang="en"):
-        # Retained for backwards compatability.  Could be factored out.
         """
         :param lang: "en" or "he"
         :return: list of strings - the titles of this node
         """
-        return self.get_titles(lang)
+        return self.title_group.all_titles(lang)
+
+    def remove_title(self, text, lang):
+        return self.title_group.remove_title(text, lang)
 
     def add_title(self, text, lang, primary=False, replace_primary=False, presentation="combined"):
         """
@@ -749,13 +646,21 @@ class TitledTreeNode(TreeNode, AbstractTitledOrTermedObject):
         """
         return self.title_group.add_title(text, lang, primary, replace_primary, presentation)
 
+    def add_shared_term(self, term):
+        self.sharedTitle = term
+        self._process_terms()
+
+    def add_primary_titles(self, en_title, he_title):
+        self.add_title(en_title, 'en', primary=True)
+        self.add_title(he_title, 'he', primary=True)
+
     def validate(self):
         super(TitledTreeNode, self).validate()
 
-        if not self.default and not self.sharedTitle and not self.get_titles_object():
+        if not self.default and not self.sharedTitle and not self.get_titles():
             raise IndexSchemaError(u"Schema node {} must have titles, a shared title node, or be default".format(self))
 
-        if self.default and (self.get_titles_object() or self.sharedTitle):
+        if self.default and (self.get_titles() or self.sharedTitle):
             raise IndexSchemaError(u"Schema node {} - default nodes can not have titles".format(self))
 
         if not self.default:
@@ -767,7 +672,7 @@ class TitledTreeNode(TreeNode, AbstractTitledOrTermedObject):
         if self.children and len([c for c in self.children if c.default]) > 1:
             raise IndexSchemaError(u"Schema Structure Node {} has more than one default child.".format(self.key))
 
-        if self.sharedTitle and Term().load({"name": self.sharedTitle}).titles != self.get_titles_object():
+        if self.sharedTitle and Term().load({"name": self.sharedTitle}).titles != self.get_titles():
             raise IndexSchemaError(u"Schema node {} with sharedTitle can not have explicit titles".format(self))
 
         #if not self.default and not self.primary_title("he"):
@@ -781,7 +686,7 @@ class TitledTreeNode(TreeNode, AbstractTitledOrTermedObject):
             if self.sharedTitle:
                 d["sharedTitle"] = self.sharedTitle
             if not self.sharedTitle or kwargs.get("expand_shared"):
-                d["titles"] = self.get_titles_object()
+                d["titles"] = self.get_titles()
         if kwargs.get("expand_titles"):
             d["title"] = self.title_group.primary_title("en")
             d["heTitle"] = self.title_group.primary_title("he")
@@ -894,7 +799,7 @@ class NumberedTitledTreeNode(TitledTreeNode):
         """
         key = (title, lang, anchored, compiled, kwargs.get("for_js"), kwargs.get("match_range"), kwargs.get("strict"), kwargs.get("terminated"), kwargs.get("escape_titles"))
         if not self._regexes.get(key):
-            reg = ur"^" if anchored else u""
+            reg = ur"^" if anchored else ""
             title_block = regex.escape(title) if escape_titles else title
             reg += ur"(?P<title>" + title_block + ur")" if capture_title else title_block
             reg += self.after_title_delimiter_re
@@ -916,11 +821,7 @@ class NumberedTitledTreeNode(TitledTreeNode):
                     reg += u"?"
 
         if kwargs.get("match_range"):
-            #TODO there is a potential error with this regex. it fills in toSections starting from highest depth and going to lowest.
-            #TODO Really, the depths should be filled in the opposite order, but it's difficult to write a regex to match.
-            #TODO However, most false positives will be filtered out in library._get_ref_from_match()
-
-            reg += ur"(?:\s*[-\u2013\u2011]\s*"  # maybe there's a dash (either n or m dash) and a range
+            reg += ur"(?:\s*-\s*"  # maybe there's a dash and a range
             reg += ur"(?=\S)"  # must be followed by something (Lookahead)
             group = "ar0" if not kwargs.get("for_js") else None
             reg += self._addressTypes[0].regex(lang, group, **kwargs)
@@ -953,7 +854,7 @@ class NumberedTitledTreeNode(TitledTreeNode):
         self.depth = len(section_names)
         self.sectionNames = section_names
         if address_types is None:
-            self.addressTypes = [sec if globals().get("Address{}".format(sec), None) else 'Integer' for sec in section_names]
+            self.addressTypes = ['Integer'] * len(section_names)
         else:
             self.addressTypes = address_types
 
@@ -1227,27 +1128,6 @@ class SchemaNode(TitledTreeNode):
         d["toSections"] = sections
         return text.Ref(_obj=d)
 
-    def find_string(self, regex_str, cleaner=lambda x: x, strict=True, lang='he', vtitle=None):
-        """
-        See TextChunk.text_index_map
-        :param regex_str:
-        :param cleaner:
-        :param strict:
-        :param lang:
-        :param vtitle:
-        :return:
-        """
-        def traverse(node):
-            matches = []
-            if node.children:
-                for child in node.children:
-                    temp_matches = traverse(child)
-                    matches += temp_matches
-            else:
-                return node.ref().text(lang=lang, vtitle=vtitle).find_string(regex_str, cleaner=cleaner, strict=strict)
-
-        return traverse(self)
-
     def text_index_map(self, tokenizer=lambda x: re.split(u'\s+',x), strict=True, lang='he', vtitle=None):
         """
         See TextChunk.text_index_map
@@ -1280,29 +1160,6 @@ class SchemaNode(TitledTreeNode):
         index_list, ref_list, _ = traverse(self, callback)
         return index_list, ref_list
 
-    def nodes_missing_content(self):
-        """
-        Used to identify nodes in the tree that have no content
-        :return: (bool-> True if node is missing content, list)
-        The list is a list of nodes that represent the root of an "empty" tree. If a SchemaNode has three children where
-        all three are missing content, only the parent SchemaNode will be in the list.
-        """
-        if self.is_leaf():
-            if self.ref().text('en').is_empty() and self.ref().text('he').is_empty():
-                return True, [self]
-            else:
-                return False, []
-
-        children_results = [child.nodes_missing_content() for child in self.children]
-
-        # If all my children are empty nodes, I am an empty node. Since I am the root of an empty tree, I add myself
-        # to the list of empty nodes instead of my children
-        if all([result[0] for result in children_results]):
-            return True, [self]
-        else:
-            return False, reduce(lambda x, y: x+y, [result[1] for result in children_results])
-
-
     def __eq__(self, other):
         return self.address() == other.address()
 
@@ -1321,8 +1178,8 @@ class JaggedArrayNode(SchemaNode, NumberedTitledTreeNode):
 
     def __init__(self, serial=None, **kwargs):
         # call SchemaContentNode.__init__, then the additional parts from NumberedTitledTreeNode.__init__
-        SchemaNode.__init__(self, serial, **kwargs)
-        NumberedTitledTreeNode.__init__(self, serial, **kwargs)
+        super(JaggedArrayNode, self).__init__(serial, **kwargs)
+        self._init_address_classes()
 
     def validate(self):
         # this is minorly repetitious, at the top tip of the diamond inheritance.
@@ -1458,19 +1315,6 @@ class AddressType(object):
             punctuation = kwargs.get("punctuation", True)
             return encode_hebrew_numeral(i, punctuation=punctuation)
 
-    @staticmethod
-    def toStrByAddressType(atype, lang, i):
-        """
-        Return string verion of `i` given `atype`
-        :param str atype: name of address type
-        :param str lang: "en" or "he"
-        """
-        try:
-            klass = globals()["Address" + atype]
-        except KeyError:
-            raise IndexSchemaError("No matching class for addressType {}".format(atype))
-        return klass(0).toStr(lang, i)
-
     def storage_offset(self):
         return 0
 
@@ -1601,24 +1445,6 @@ class AddressInteger(AddressType):
         elif lang == "he":
             return decode_hebrew_numeral(s)
 
-class AddressYear(AddressInteger):
-    """
-    :class: AddressYear stores Hebrew years as numbers, for example 778 for the year תשע״ח
-    To convert to Roman year, add 1240
-    """
-    def toNumber(self, lang, s):
-        if lang == "he":
-            return decode_hebrew_numeral(s)
-        elif lang == "en":
-            return int(s) - 1240
-
-    @classmethod
-    def toStr(cls, lang, i, **kwargs):
-        if lang == "en":
-            return str(i + 1240)
-        elif lang == "he":
-            punctuation = kwargs.get("punctuation", True)
-            return encode_hebrew_numeral(i, punctuation=punctuation)
 
 class AddressAliyah(AddressInteger):
     en_map = [u"First", u"Second", u"Third", u"Fourth", u"Fifth", u"Sixth", u"Seventh"]
@@ -1634,10 +1460,10 @@ class AddressAliyah(AddressInteger):
 
 class AddressPerek(AddressInteger):
     section_patterns = {
-        "en": ur"""(?:(?:Chapter|chapter|Perek|perek)?\s*)""",  # the internal ? is a hack to allow a non match, even if 'strict'
+        "en": ur"""(?:(?:Chapter|chapter|Perek|perek)?\s*)""",  #  the internal ? is a hack to allow a non match, even if 'strict'
         "he": ur"""(?:
-            \u05e4(?:"|\u05f4|''|'\s)?                  # Peh (for 'perek') maybe followed by a quote of some sort
-            |\u05e4\u05e8\u05e7(?:\u05d9\u05dd)?\s*                  # or 'perek(ym)' spelled out, followed by space
+            \u05e4(?:"|\u05f4|'')?                  # Peh (for 'perek') maybe followed by a quote of some sort
+            |\u05e4\u05e8\u05e7\s*                  # or 'perek' spelled out, followed by space
         )"""
     }
 
@@ -1685,8 +1511,8 @@ class AddressHalakhah(AddressInteger):
     section_patterns = {
         "en": ur"""(?:(?:Halakhah|halakhah)?\s*)""",  #  the internal ? is a hack to allow a non match, even if 'strict'
         "he": ur"""(?:
-            (?:\u05d4\u05dc\u05db(?:\u05d4|\u05d5\u05ea)\s+)			# Halakhah spelled out, with a space after
-            |(?:\u05d4\u05dc?(?:"|\u05f4|['\u05f3](?:['\u05f3]|\u05db|\s+)))		# or Haeh and possible Lamed(for 'halakhah') maybe followed by a quote of some sort
+            (?:\u05d4\u05dc\u05db\u05d4\s+)			# Halakhah spelled out, with a space after
+            |(?:\u05d4\u05dc?(?:"|\u05f4|['\u05f3](?:['\u05f3]|\s+)))		# or Haeh and possible Lamed(for 'halakhah') maybe followed by a quote of some sort
         )"""
     }
 

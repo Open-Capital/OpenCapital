@@ -7,7 +7,7 @@ import sys
 
 build = sys.argv[1]
 
-t = Trial(platform="sauce", build=build, verbose=True)
+t = Trial(platform="sauce", build=build)
 t.run()
 results = t.results()
 
