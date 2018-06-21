@@ -50,6 +50,7 @@
             '}' +
             '#sefaria-title {' +
                 'font-weight: bold;' +
+                'font-size: 16px;'+
                 'text-align: center;' +
                 'text-decoration: underline;' +
             '}';
@@ -76,19 +77,19 @@
             html += '</style>'
         }
 
-        html += '<h1 id="sefaria-title"><div class="he" dir="rtl"></div><div class="en"></div></h1>' +
+        html += '<h1 id="sefaria-title"><span class="he" dir="rtl"></span><span class="en"></span></h1>' +
             '<div class="sefaria-text he" dir="rtl"></div>' +
             '<div class="sefaria-text en"></div>' +
             '<div class = "sefaria-notice" style="font-size: 10px; margin-top: 10px;">';
 
         if (mode == "popup-click") {
             html += '<div class="en">Text from Sefaria.org.  <a class = "sefaria-popup-ref" href = "">Click here</a> for full context and commentary.</div>' +
-            '<div class="he" dir="rtl">תוכן מספאריה. ' +
+            '<div class="he" dir="rtl">תוכן מספריא. ' +
                 ' <a class = "sefaria-popup-ref" href = "">' + 'ליחצו' + '</a> ' + 'לראות הקשר ופרושים' +
             '</div>';
         } else {
             html += '<div class="en">Text from Sefaria.org.  Click the reference for full context and commentary.</div>' +
-            '<div class="he" dir="rtl">תוכן מספאריה. תלחץ לראות הקשר ופרושים</div>';
+            '<div class="he" dir="rtl">תוכן מספריא. תלחץ לראות הקשר ופרושים</div>';
         }
 
         html += '</div>';
