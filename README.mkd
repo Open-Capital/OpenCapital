@@ -85,7 +85,7 @@ Make sure that the server user has write access to it by using a command such as
 
 If you don't already have it, [install MongoDB](http://docs.mongodb.org/manual/installation/). Our current data dump requires MongoDB version 2.6 or later. After installing Mongo, run the mongo daemon with:
 
-    sudo mongod
+    sudo service mongod start
 
 #### Put some texts in your database:
 
